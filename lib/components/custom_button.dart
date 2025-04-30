@@ -17,13 +17,18 @@ class CustomButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF003F92),
           foregroundColor: Colors.white,
+
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
         onPressed: onPressed,
-        child: Text(text),
+        child: Text(text,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),),
       ),
     );
   }

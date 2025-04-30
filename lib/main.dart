@@ -9,7 +9,6 @@ class UnitinsLoginApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Portal do Aluno',
       home: Center(child: LoginPage()),
       debugShowCheckedModeBanner: false,
     );

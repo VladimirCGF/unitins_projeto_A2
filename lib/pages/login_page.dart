@@ -2,11 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:unitins_projeto/components/custom_button.dart';
 import 'package:unitins_projeto/components/custom_expansion_tile.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,9 +35,9 @@ class LoginPage extends StatelessWidget {
             children: [
               Card(
                 elevation: 8,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
                 child: Column(
                   children: [
                     Padding(
@@ -34,16 +49,22 @@ class LoginPage extends StatelessWidget {
                             height: 60,
                           ),
                           const SizedBox(height: 16),
-                          const Text(
-                            'Portal do Aluno',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: const Text(
+                              'Portal do Aluno',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 12),
-                          const Text(
-                            'Acesse utilizando seu e-mail institucional:',
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: const Text(
+                              'Acesse utilizando seu e-mail institucional:',
+                            ),
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
@@ -72,20 +93,28 @@ class LoginPage extends StatelessWidget {
                               child: const Text('Esqueci minha senha'),
                             ),
                           ),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton(
-                              onPressed: () {},
-                              child: const Text('Preciso de Ajuda'),
-                            ),
-                          ),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.school),
-                              label: const Text('AVA (Turmas 2001-2008)'),
-                            ),
+                          Wrap(
+                            children: [
+                              Expanded(
+                                child: TextButton(
+                                  onPressed: () {},
+                                  child: const Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text('Preciso de Ajuda'),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: TextButton.icon(
+                                  onPressed: () {},
+                                  icon: const Icon(Icons.school),
+                                  label: const Text('AVA (Turmas 2001-2008)'),
+                                  style: TextButton.styleFrom(
+                                    alignment: Alignment.centerLeft,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 16),
                           Center(
@@ -100,12 +129,7 @@ class LoginPage extends StatelessWidget {
                     // ExpansionTile dentro do Card, mas fora do padding
                     const CustomExpansionTile(
                       title: 'Acesse nossos Tutoriais e Links Úteis',
-                      children: [
-                        Text(
-                          'Links e tutoriais úteis aqui...',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ],
+                      children: [],
                     ),
                   ],
                 ),
