@@ -55,7 +55,7 @@ class _CustomCardState extends State<CustomCard> {
                 fontWeight: FontWeight.w400,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             Center(
               child: CustomButton(
                 onPressed: () {},

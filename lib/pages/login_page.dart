@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:unitins_projeto/components/custom_button.dart';
 import 'package:unitins_projeto/components/custom_expansion_tile.dart';
+import 'package:unitins_projeto/pages/unitins_apps_page.dart';
+
+import '../components/custom_footer.dart';
 
 class LoginPage extends StatefulWidget {
   final TextEditingController emailController = TextEditingController();
@@ -119,7 +122,15 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: 16),
                           Center(
                             child: CustomButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => const UnitinsAppsPage(),
+                                  ),
+                                );
+                              },
                               text: 'Entrar',
                             ),
                           ),
@@ -134,17 +145,11 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
-              const Text(
-                '2025 - Unitins - Todos os direitos reservados.\nDesenvolvido pela Diretoria de Tecnologia da Informação',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white70, fontSize: 12),
-              ),
-              const SizedBox(height: 16),
             ],
           ),
         ),
       ),
+      bottomNavigationBar: const CustomFooter(),
     );
   }
 }
