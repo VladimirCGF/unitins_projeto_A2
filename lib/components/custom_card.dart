@@ -58,7 +58,7 @@ class _CustomCardState extends State<CustomCard> {
             const SizedBox(height: 20),
             Center(
               child: CustomButton(
-                onPressed: () {},
+                onPressed: widget.onPressed,
                 text: 'Acessar',
                 color: Colors.white,
                 textColor: Color(0xFF094AB2),
