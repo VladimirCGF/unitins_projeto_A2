@@ -1,8 +1,11 @@
 class Constants {
-  static const USER_FAVORITES_BASE_URL =
-      'https://shop-43627-default-rtdb.firebaseio.com/userFavorites';
-  static const PRODUCT_BASE_URL =
-      'https://shop-43627-default-rtdb.firebaseio.com/products';
-  static const ORDER_BASE_URL =
-      'https://shop-43627-default-rtdb.firebaseio.com/orders';
+  static const USER_MATRICULA_BASE_URL =
+      'https://unitins-projeto-default-rtdb.firebaseio.com/userMatricula';
+  static const DISCIPLINA_BASE_URL =
+      'https://unitins-projeto-default-rtdb.firebaseio.com/disciplinas';
+  static const PERIODO_BASE_URL =
+      'https://unitins-projeto-default-rtdb.firebaseio.com/periodos';
+  static const CURSO_BASE_URL =
+      'https://unitins-projeto-default-rtdb.firebaseio.com/cursos';
+
 }

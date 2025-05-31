@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "921816636984",
+    "firebase_url": "https://unitins-projeto-default-rtdb.firebaseio.com",
+    "project_id": "unitins-projeto",
+    "storage_bucket": "unitins-projeto.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:921816636984:android:56ab986e5b57c2a46990cd",
+        "android_client_info": {
+          "package_name": "com.example.unitins_projeto"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBn6bc0OTZtPZ3FF5oTWVts0OCBpj85SXc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

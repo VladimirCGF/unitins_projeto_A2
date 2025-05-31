@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:unitins_projeto/pages/CourseSelectionScreen.dart';
 import 'package:unitins_projeto/utils/app_routes.dart';
 
+import '../components/app_drawer.dart';
 import '../components/custom_card.dart';
 import '../components/custom_footer.dart';
+import 'grade_curricular_page.dart';
 
-class UnitinsAppsPage extends StatefulWidget {
-  const UnitinsAppsPage({super.key});
+class Dashboard extends StatefulWidget {
+  const Dashboard({super.key});
 
   @override
-  State<UnitinsAppsPage> createState() => _UnitinsAppsPageState();
+  State<Dashboard> createState() => _DashboardState();
 }
 
-class _UnitinsAppsPageState extends State<UnitinsAppsPage>
+class _DashboardState extends State<Dashboard>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -45,10 +47,11 @@ class _UnitinsAppsPageState extends State<UnitinsAppsPage>
           indicatorColor: Colors.blue.shade900,
           tabs: const [
             Tab(text: 'Meus Aplicativos'),
-            // Tab(text: 'Meus Tutoriais'),
+            Tab(text: 'Meus Tutoriais'),
           ],
         ),
       ),
+      drawer: const AppDrawer(),
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -102,7 +105,15 @@ class _UnitinsAppsPageState extends State<UnitinsAppsPage>
                       title: 'GRADE CURRICULAR',
                       description:
                           'Selecione um curso e veja as disciplinas distribuídas por período.',
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                            const GradeCurricularPage(),
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 12),
                     CustomCard(
@@ -110,7 +121,9 @@ class _UnitinsAppsPageState extends State<UnitinsAppsPage>
                       description:
                           'Fazer a rematrícula nos semestres posteriores, conforme '
                           'calendário acadêmico. Emissão da declaração de vínculo.',
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context).pushNamed(AppRoutes.disciplinaForm);
+                      },
                     ),
                     const SizedBox(height: 12),
                     CustomCard(
