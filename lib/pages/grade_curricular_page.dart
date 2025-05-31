@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:unitins_projeto/components/custom_footer.dart';
 
+import '../components/custom_button.dart';
 import '../models/curso.dart';
 import '../models/curso_list.dart';
 
@@ -34,17 +36,34 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
   @override
   Widget build(BuildContext context) {
     final cursos = Provider.of<CursoList>(context).items;
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Matriz Curricular'),
-        centerTitle: true,
+        title: Image.network(
+          'https://www.unitins.br/uniPerfil/Logomarca/Imagem/09997c779523a61bd01bb69b0a789242',
+          height: 80,
+        ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : cursos.isEmpty
-              ? const Center(child: Text('Nenhum curso encontrado'))
-              : _buildCursosPorPeriodo(cursos),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Text(
+              'Matriz Curricular - SISTEMAS DE INFORMAÇÃO',
+              style: TextStyle(
+                fontSize: 40,
+                color: Color(0xFF656565),
+              ),
+            ),
+          ),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : cursos.isEmpty
+                    ? const Center(child: Text('Nenhum curso encontrado'))
+                    : _buildCursosPorPeriodo(cursos),
+          ),
+        ],
+      ),
     );
   }
 
@@ -54,25 +73,65 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
     for (var curso in cursos) {
       cursosPorPeriodo.putIfAbsent(curso.periodo, () => []).add(curso);
     }
+    final periodosNumericos = cursosPorPeriodo.keys
+        .where((k) => int.tryParse(k) != null)
+        .map((k) => int.parse(k))
+        .toList()
+      ..sort();
 
-    final periodosOrdenados = cursosPorPeriodo.keys.toList()
-      ..sort((a, b) => int.tryParse(a)?.compareTo(int.tryParse(b) as num) ?? 0);
+    final outrosPeriodos = cursosPorPeriodo.keys
+        .where((k) => int.tryParse(k) == null)
+        .toList();
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (var periodo in periodosOrdenados)
-            _buildPeriodoComCH(
-              periodo: '$periodoº Período',
-              cursos: cursosPorPeriodo[periodo]!,
+    final periodosOrdenados = [
+      ...periodosNumericos.map((e) => e.toString()),
+      ...outrosPeriodos,
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              children: [
+                for (var periodo in periodosOrdenados)
+                  _buildPeriodoComCH(
+                    periodo: int.tryParse(periodo) != null
+                        ? '$periodoº Período'
+                        : periodo, // se não for número, exibe direto
+                    cursos: cursosPorPeriodo[periodo]!,
+                  ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      CustomButton(
+                        text: 'Voltar',
+                        color: Colors.white,
+                        textColor: Colors.black,
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      CustomButton(
+                        text: 'Imprimir',
+                        onPressed: () {},
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 40),
+                const CustomFooter(),
+              ],
             ),
-          const SizedBox(height: 20),
-          _buildFooter(),
-        ],
-      ),
+          ),
+        );
+      },
     );
+
   }
 
   Widget _buildPeriodoComCH({
@@ -141,15 +200,6 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
                 )),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildFooter() {
-    return const Center(
-      child: Text(
-        'Unitins - Sistemas de Informação',
-        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
       ),
     );
   }
