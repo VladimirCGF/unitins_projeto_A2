@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:unitins_projeto/pages/CourseSelectionScreen.dart';
+import 'package:unitins_projeto/pages/rematricula_page.dart';
 import 'package:unitins_projeto/utils/app_routes.dart';
 
 import '../components/app_drawer.dart';
@@ -122,7 +123,13 @@ class _DashboardState extends State<Dashboard>
                           'Fazer a rematrícula nos semestres posteriores, conforme '
                           'calendário acadêmico. Emissão da declaração de vínculo.',
                       onPressed: () {
-                        Navigator.of(context).pushNamed(AppRoutes.disciplinaForm);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                            const RematriculaPage(),
+                          ),
+                        );
                       },
                     ),
                     const SizedBox(height: 12),
@@ -139,52 +146,6 @@ class _DashboardState extends State<Dashboard>
                       description: 'Análise curricular completa.',
                       onPressed: () {},
                     ),
-                    // const SizedBox(height: 30),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //   children: [
-                    //     const Text(
-                    //       'ÚLTIMA NOTÍCIA',
-                    //       style: TextStyle(
-                    //         fontFamily: 'OpenSans',
-                    //         fontSize: 20,
-                    //         color: Color(0xFF094AB2),
-                    //         fontWeight: FontWeight.w300,
-                    //       ),
-                    //     ),
-                    //     Icon(Icons.add_sharp, color: Color(0xFF003F92)),
-                    //   ],
-                    // ),
-                    // const SizedBox(height: 8),
-                    // const Divider(color: Colors.grey, thickness: 1),
-                    // const SizedBox(height: 30),
-                    // const Text(
-                    //   'Unitins celebra 35 anos com expansão e \nimpacto na educação do '
-                    //   'Tocantins',
-                    //   style: TextStyle(
-                    //     fontFamily: 'OpenSans',
-                    //     fontSize: 20,
-                    //     color: Color(0xFF094AB2),
-                    //     fontWeight: FontWeight.w300,
-                    //   ),
-                    // ),
-                    // const SizedBox(height: 12),
-                    // const Text(
-                    //   'São mais de três décadas marcadas por conquistas e transformações'
-                    //   ' que consolidam sua presença no Tocantins',
-                    //   style: TextStyle(
-                    //     fontFamily: 'OpenSans',
-                    //     fontSize: 18,
-                    //     color: Color(0xFF094AB2),
-                    //     fontWeight: FontWeight.w300,
-                    //   ),
-                    // ),
-                    // const SizedBox(height: 12),
-                    // Image.network(
-                    //   'https://www.unitins.br/cms/Midia/Imagens/GNNBVJODDKD4O696UBLWSUTASRWJVSU4PP4ZZBA8.png',
-                    //   fit: BoxFit.cover,
-                    //   width: double.infinity,
-                    // ),
                   ],
                 ),
               ),

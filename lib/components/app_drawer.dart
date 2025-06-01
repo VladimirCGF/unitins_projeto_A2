@@ -12,7 +12,7 @@ class AppDrawer extends StatelessWidget {
       child: Column(
         children: [
           AppBar(
-            title: const Text('Bem vindo Usuário!'),
+            title: const Text('Menu'),
             automaticallyImplyLeading: false,
           ),
           const Divider(),
@@ -42,6 +42,15 @@ class AppDrawer extends StatelessWidget {
             onTap: () {
               Navigator.of(context).pushReplacementNamed(
                 AppRoutes.cursos,
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.edit),
+            title: const Text('Gerenciar Alunos'),
+            onTap: () {
+              Navigator.of(context).pushReplacementNamed(
+                AppRoutes.users,
               );
             },
           ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:unitins_projeto/components/custom_button.dart';
-import 'package:unitins_projeto/pages/boletim_academico_app.dart';
+import 'package:unitins_projeto/pages/boletim_page.dart';
 
 class CourseSelectionScreen extends StatefulWidget {
   const CourseSelectionScreen({super.key});
@@ -112,7 +112,7 @@ class _CourseSelectionScreenState extends State<CourseSelectionScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                        const BoletimAcademicoApp(),
+                        const BoletimPage(),
                       ),
                     );
                   },

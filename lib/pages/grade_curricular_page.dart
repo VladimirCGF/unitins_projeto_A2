@@ -79,9 +79,8 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
         .toList()
       ..sort();
 
-    final outrosPeriodos = cursosPorPeriodo.keys
-        .where((k) => int.tryParse(k) == null)
-        .toList();
+    final outrosPeriodos =
+        cursosPorPeriodo.keys.where((k) => int.tryParse(k) == null).toList();
 
     final periodosOrdenados = [
       ...periodosNumericos.map((e) => e.toString()),
@@ -131,7 +130,6 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
         );
       },
     );
-
   }
 
   Widget _buildPeriodoComCH({
@@ -176,28 +174,30 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
               ],
             ),
             const Divider(height: 20),
-            ...cursos.map((curso) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 100,
-                        child: Text(
-                          curso.codigo,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
+            ...cursos.map(
+              (curso) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 100,
+                      child: Text(
+                        curso.codigo,
+                        style: const TextStyle(fontWeight: FontWeight.w500),
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(child: Text(curso.nome)),
-                      const SizedBox(width: 10),
-                      SizedBox(
-                        width: 40,
-                        child: Text('${curso.ch}h'),
-                      ),
-                    ],
-                  ),
-                )),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text(curso.nome)),
+                    const SizedBox(width: 10),
+                    SizedBox(
+                      width: 40,
+                      child: Text('${curso.ch}h'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),

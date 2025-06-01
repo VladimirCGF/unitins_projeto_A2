@@ -14,6 +14,7 @@ class Auth with ChangeNotifier {
   DateTime? _expiryDate;
   Timer? _logoutTimer;
 
+
   bool get isAuth {
     final isValid = _expiryDate?.isAfter(DateTime.now()) ?? false;
     return _token != null && isValid;

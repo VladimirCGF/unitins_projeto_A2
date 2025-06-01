@@ -55,53 +55,6 @@ class _CursoFormPageState extends State<CursoFormPage> {
     _periodo.dispose();
     super.dispose();
   }
-
-  // Future<void> _submitForm() async {
-  //   final isValid = _formKey.currentState?.validate() ?? false;
-  //
-  //   if (!isValid) {
-  //     return;
-  //   }
-  //
-  //   _formKey.currentState?.save();
-  //
-  //   setState(() => _isLoading = true);
-  //
-  //   try {
-  //     await Provider.of<CursoList>(
-  //       context,
-  //       listen: false,
-  //     ).saveCurso(_formData);
-  //
-  //     Navigator.of(context).pop();
-  //   } catch (error, stackTrace) {
-  //     // Imprime o erro completo no console
-  //     print('❌ ERRO AO SALVAR CURSO:');
-  //     print('----------------------------------------');
-  //     print('Tipo do erro: ${error.runtimeType}');
-  //     print('Mensagem: $error');
-  //     print('----------------------------------------');
-  //     print('STACK TRACE:');
-  //     print(stackTrace); // Isso mostra a sequência de chamadas que levou ao erro
-  //     print('----------------------------------------');
-  //     await showDialog<void>(
-  //       context: context,
-  //       builder: (ctx) => AlertDialog(
-  //         title: const Text('Ocorreu um erro!'),
-  //         content: const Text('Ocorreu um erro ao salvar o curso.'),
-  //         actions: [
-  //           TextButton(
-  //             child: const Text('Ok'),
-  //             onPressed: () => Navigator.of(context).pop(),
-  //           ),
-  //         ],
-  //       ),
-  //     );
-  //   } finally {
-  //     setState(() => _isLoading = false);
-  //   }
-  // }
-
   Future<void> _submitForm() async {
     final isValid = _formKey.currentState?.validate() ?? false;
 
@@ -243,10 +196,8 @@ class _CursoFormPageState extends State<CursoFormPage> {
                       },
                     ),
                     const SizedBox(height: 30),
-                    // Dropdown com lista de Periodo
                     Consumer<PeriodoList>(
                       builder: (ctx, periodoList, child) {
-                        // Se os períodos ainda estiverem carregando
                         if (periodoList.items.isEmpty) {
                           return const Padding(
                             padding: EdgeInsets.symmetric(vertical: 16),
