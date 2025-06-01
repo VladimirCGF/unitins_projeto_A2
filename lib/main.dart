@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:unitins_projeto/models/curso_list.dart';
+import 'package:unitins_projeto/models/disciplina_list.dart';
 import 'package:unitins_projeto/models/user_list.dart';
 import 'package:unitins_projeto/pages/auth_or_home_page.dart';
 import 'package:unitins_projeto/pages/boletim_form_page.dart';
 import 'package:unitins_projeto/pages/boletim_page.dart';
 import 'package:unitins_projeto/pages/curso_form_page.dart';
 import 'package:unitins_projeto/pages/cursos_page.dart';
+import 'package:unitins_projeto/pages/disciplina_form_page.dart';
+import 'package:unitins_projeto/pages/disciplinas_page.dart';
 import 'package:unitins_projeto/pages/periodo_form_page.dart';
 import 'package:unitins_projeto/pages/periodos_page.dart';
 import 'package:unitins_projeto/pages/rematricula_page.dart';
@@ -38,6 +41,16 @@ class MyApp extends StatelessWidget {
           create: (_) => PeriodoList(),
           update: (ctx, auth, previous) {
             return PeriodoList(
+              auth.token ?? '',
+              auth.userId ?? '',
+              previous?.items ?? [],
+            );
+          },
+        ),
+        ChangeNotifierProxyProvider<Auth, DisciplinaList>(
+          create: (_) => DisciplinaList(),
+          update: (ctx, auth, previous) {
+            return DisciplinaList(
               auth.token ?? '',
               auth.userId ?? '',
               previous?.items ?? [],
@@ -87,6 +100,8 @@ class MyApp extends StatelessWidget {
           AppRoutes.periodoForm: (ctx) => const PeriodoFormPage(),
           AppRoutes.cursos: (ctx) => const CursosPage(),
           AppRoutes.cursoForm: (ctx) => const CursoFormPage(),
+          AppRoutes.disciplinas: (ctx) => const DisciplinaPage(),
+          AppRoutes.disciplinaForm: (ctx) => const DisciplinaFormPage(),
           AppRoutes.users: (ctx) => const UserPage(),
           AppRoutes.userForm: (ctx) => const UserFormPage(),
           AppRoutes.boletins: (ctx) => const BoletimPage(),

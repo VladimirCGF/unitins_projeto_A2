@@ -1,5 +1,7 @@
 class AppRoutes {
   static const authOrHome = '/';
+  static const disciplinas = '/disciplinas';
+  static const disciplinaForm = '/disciplina-form';
   static const cursos = '/cursos';
   static const cursoForm = '/curso-form';
   static const users = '/users';

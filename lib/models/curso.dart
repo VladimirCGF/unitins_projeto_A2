@@ -1,52 +1,45 @@
+
+
+import 'package:unitins_projeto/models/disciplina.dart';
+
 class Curso {
   final String idCurso;
-  final String codigo;
   final String nome;
-  final String ch; // Carga horária
-  final String periodo;
-
+  final List<Disciplina> disciplinas;
 
   Curso({
     required this.idCurso,
-    required this.codigo,
     required this.nome,
-    required this.ch,
-    required this.periodo,
+    this.disciplinas = const [],
   });
 
   factory Curso.fromMap(Map<String, dynamic> map) {
     return Curso(
       idCurso: map['idCurso'] ?? '',
-      codigo: map['codigo'],
-      nome: map['nome'],
-      ch: map['ch'],
-      periodo: map['periodo'],
+      nome: map['nome'] ?? '',
+      disciplinas: map['disciplinas'] != null
+          ? (map['disciplinas'] as List).map((d) => Disciplina.fromMap(d)).toList()
+          : [],
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'idCurso': idCurso,
-      'codigo': codigo,
       'nome': nome,
-      'ch': ch,
-      'periodo': periodo,
+      'disciplinas': disciplinas.map((d) => d.toMap()).toList(),
     };
   }
 
   Curso copyWith({
     String? idCurso,
-    String? codigo,
     String? nome,
-    String? ch,
-    String? periodo,
+    List<Disciplina>? disciplinas,
   }) {
     return Curso(
       idCurso: idCurso ?? this.idCurso,
-      codigo: codigo ?? this.codigo,
       nome: nome ?? this.nome,
-      ch: ch ?? this.ch,
-      periodo: periodo ?? this.periodo,
+      disciplinas: disciplinas ?? this.disciplinas,
     );
   }
 }

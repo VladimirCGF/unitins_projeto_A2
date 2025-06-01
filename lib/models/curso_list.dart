@@ -3,15 +3,17 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:unitins_projeto/models/curso.dart';
 
 import '../exceptions/http_exception.dart';
+import '../models/curso.dart';
 import '../utils/constants.dart';
+import 'curso.dart';
 
 class CursoList with ChangeNotifier {
   final String _token;
   final String _userId;
   List<Curso> _items = [];
+
 
   List<Curso> get items => [..._items];
 
@@ -25,7 +27,7 @@ class CursoList with ChangeNotifier {
     return _items.length;
   }
 
-  Future<void> loadCursos() async {
+  Future<void> loadCurso() async {
     _items.clear();
 
     final response = await http.get(
@@ -54,11 +56,9 @@ class CursoList with ChangeNotifier {
       idCurso: hasId
           ? data['idCurso'] as String
           : Random().nextDouble().toString(),
-      codigo: data['codigo'] as String,
       nome: data['nome'] as String,
-      ch: data['ch'] as String,
-      periodo: data['idPeriodo'] as String,
     );
+
     if (hasId) {
       return updateCurso(curso);
     } else {
@@ -71,10 +71,7 @@ class CursoList with ChangeNotifier {
       Uri.parse('${Constants.CURSO_BASE_URL}.json?auth=$_token'),
       body: jsonEncode(
         {
-          "codigo": curso.codigo,
           "nome": curso.nome,
-          "ch": curso.ch,
-          "periodo": curso.periodo,
         },
       ),
     );
@@ -90,10 +87,7 @@ class CursoList with ChangeNotifier {
             '${Constants.CURSO_BASE_URL}/${curso.idCurso}.json?auth=$_token'),
         body: jsonEncode(
           {
-            "codigo": curso.codigo,
             "nome": curso.nome,
-            "ch": curso.ch,
-            "periodo": curso.periodo,
           },
         ),
       );
@@ -101,7 +95,6 @@ class CursoList with ChangeNotifier {
       notifyListeners();
     }
   }
-
 
   Future<void> removeCurso(Curso curso) async {
     int index = _items.indexWhere((p) => p.idCurso == curso.idCurso);
@@ -126,5 +119,5 @@ class CursoList with ChangeNotifier {
       }
     }
   }
-
 }
+

@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:unitins_projeto/components/custom_footer.dart';
 
 import '../components/custom_button.dart';
-import '../models/curso.dart';
-import '../models/curso_list.dart';
+import '../models/disciplina.dart';
+import '../models/disciplina_list.dart';
 
 class GradeCurricularPage extends StatefulWidget {
   const GradeCurricularPage({super.key});
@@ -18,7 +18,7 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
   bool _isInit = true;
 
   Future<void> _refreshCursos(BuildContext context) async {
-    await Provider.of<CursoList>(context, listen: false).loadCursos();
+    await Provider.of<DisciplinaList>(context, listen: false).loadDisciplinas();
   }
 
   @override
@@ -35,7 +35,7 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
 
   @override
   Widget build(BuildContext context) {
-    final cursos = Provider.of<CursoList>(context).items;
+    final cursos = Provider.of<DisciplinaList>(context).items;
     return Scaffold(
       appBar: AppBar(
         title: Image.network(
@@ -67,8 +67,8 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
     );
   }
 
-  Widget _buildCursosPorPeriodo(List<Curso> cursos) {
-    final Map<String, List<Curso>> cursosPorPeriodo = {};
+  Widget _buildCursosPorPeriodo(List<Disciplina> cursos) {
+    final Map<String, List<Disciplina>> cursosPorPeriodo = {};
 
     for (var curso in cursos) {
       cursosPorPeriodo.putIfAbsent(curso.periodo, () => []).add(curso);
@@ -134,7 +134,7 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
 
   Widget _buildPeriodoComCH({
     required String periodo,
-    required List<Curso> cursos,
+    required List<Disciplina> cursos,
   }) {
     return Card(
       elevation: 3,

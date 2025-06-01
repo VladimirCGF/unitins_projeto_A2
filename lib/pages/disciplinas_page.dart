@@ -1,41 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:unitins_projeto/components/curso_item.dart';
-import 'package:unitins_projeto/models/curso_list.dart';
+import 'package:unitins_projeto/components/disciplina_item.dart';
+import 'package:unitins_projeto/models/disciplina_list.dart';
 
 import '../components/app_drawer.dart';
 import '../utils/app_routes.dart';
 
-class CursosPage extends StatefulWidget {
-  const CursosPage({Key? key}) : super(key: key);
+class DisciplinaPage extends StatefulWidget {
+  const DisciplinaPage({Key? key}) : super(key: key);
 
   @override
-  State<CursosPage> createState() => _CursosPageState();
+  State<DisciplinaPage> createState() => _DisciplinaPageState();
 }
 
-class _CursosPageState extends State<CursosPage> {
+class _DisciplinaPageState extends State<DisciplinaPage> {
   bool _isLoading = false;
   bool _isInit = true;
 
-  Future<void> _refreshCursos(BuildContext context) async {
-    return Provider.of<CursoList>(
+  Future<void> _refreshDisciplinas(BuildContext context) async {
+    return Provider.of<DisciplinaList>(
       context,
       listen: false,
-    ).loadCurso();
+    ).loadDisciplinas();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Carrega os cursos apenas na primeira vez
+    // Carrega os disciplinas apenas na primeira vez
     if (_isInit) {
       setState(() => _isLoading = true);
-      _refreshCursos(context).then((_) {
+      _refreshDisciplinas(context).then((_) {
         setState(() => _isLoading = false);
       }).catchError((error) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao carregar cursos: $error')),
+          SnackBar(content: Text('Erro ao carregar disciplinas: $error')),
         );
       });
       _isInit = false;
@@ -44,11 +44,11 @@ class _CursosPageState extends State<CursosPage> {
 
   @override
   Widget build(BuildContext context) {
-    final CursoList products = Provider.of(context);
+    final DisciplinaList disciplinas = Provider.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gerenciar Cursos'),
+        title: const Text('Gerenciar Disciplinas'),
         titleTextStyle: const TextStyle(color: Colors.white, fontSize: 20),
         iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: Colors.blue,
@@ -57,11 +57,11 @@ class _CursosPageState extends State<CursosPage> {
             icon: const Icon(Icons.add),
             onPressed: () async {
               final result = await Navigator.of(context).pushNamed(
-                AppRoutes.cursoForm,
+                AppRoutes.disciplinaForm,
               );
               if (result == true) {
                 setState(() => _isLoading = true);
-                _refreshCursos(context).then((_) {
+                _refreshDisciplinas(context).then((_) {
                   setState(() => _isLoading = false);
                 });
               }
@@ -73,30 +73,30 @@ class _CursosPageState extends State<CursosPage> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              onRefresh: () => _refreshCursos(context),
+              onRefresh: () => _refreshDisciplinas(context),
               child: Padding(
                 padding: const EdgeInsets.all(8),
                 child: ListView.builder(
-                  itemCount: products.itemsCount,
+                  itemCount: disciplinas.itemsCount,
                   itemBuilder: (ctx, i) => Column(
                     children: [
                       InkWell(
                         onTap: () async {
                           // Abre o formulário para edição
                           final result = await Navigator.of(context).pushNamed(
-                            AppRoutes.cursoForm,
-                            arguments: products.items[i],
+                            AppRoutes.disciplinaForm,
+                            arguments: disciplinas.items[i],
                           );
 
                           // Recarrega após edição
                           if (result == true) {
                             setState(() => _isLoading = true);
-                            _refreshCursos(context).then((_) {
+                            _refreshDisciplinas(context).then((_) {
                               setState(() => _isLoading = false);
                             });
                           }
                         },
-                        child: CursoItem(products.items[i]),
+                        child: DisciplinaItem(disciplinas.items[i]),
                       ),
                       const Divider(),
                     ],

@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import '../exceptions/http_exception.dart';
 import '../models/boletim.dart';
 import '../utils/constants.dart';
-import 'curso.dart';
+import 'disciplina.dart';
 
 class BoletimList with ChangeNotifier {
   final String _token;
@@ -56,9 +56,9 @@ class BoletimList with ChangeNotifier {
           ? data['idBoletim'] as String
           : Random().nextDouble().toString(),
       periodoLetivo: data['periodoLetivo'] as String,
-      cursos: (data['cursos'] as List?)
+      disciplinas: (data['disciplinas'] as List?)
               ?.map((cursoData) =>
-                  Curso.fromMap(cursoData as Map<String, dynamic>))
+                  Disciplina.fromMap(cursoData as Map<String, dynamic>))
               .toSet() ??
           {},
       faltasNoSemestre: (data['faltasNoSemestre'] ?? 0) as int,
@@ -81,7 +81,7 @@ class BoletimList with ChangeNotifier {
         Uri.parse('${Constants.BOLETIM_BASE_URL}/$_userId.json?auth=$_token'),
         body: jsonEncode({
         'periodoLetivo': boletim.periodoLetivo,
-        'cursos': boletim.cursos.map((c) => c.toMap()).toList(),
+        'disciplinas': boletim.disciplinas.map((c) => c.toMap()).toList(),
         'faltasNoSemestre': boletim.faltasNoSemestre,
         'a1': boletim.a1,
         'a2': boletim.a2,
@@ -113,7 +113,7 @@ class BoletimList with ChangeNotifier {
             '${Constants.BOLETIM_BASE_URL}/${boletim.idBoletim}.json?auth=$_token'),
         body: jsonEncode({
           'periodoLetivo': boletim.periodoLetivo,
-          'cursos': boletim.cursos.map((c) => c.toMap()).toList(),
+          'disciplinas': boletim.disciplinas.map((c) => c.toMap()).toList(),
           'faltasNoSemestre': boletim.faltasNoSemestre,
           'a1': boletim.a1,
           'a2': boletim.a2,

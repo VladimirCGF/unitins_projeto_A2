@@ -1,9 +1,9 @@
-import 'curso.dart';
+import 'disciplina.dart';
 
 class Boletim {
   final String idBoletim;
   final String periodoLetivo; // Ex: "2023.1"
-  final Set<Curso> cursos;
+  final Set<Disciplina> disciplinas;
   final int? faltasNoSemestre;
   final double? a1;
   final double? a2;
@@ -15,7 +15,7 @@ class Boletim {
   Boletim({
     required this.idBoletim,
     required this.periodoLetivo,
-    required this.cursos,
+    required this.disciplinas,
     required this.faltasNoSemestre,
     this.a1,
     this.a2,
@@ -29,8 +29,8 @@ class Boletim {
     return Boletim(
       idBoletim: map['idBoletim'],
       periodoLetivo: map['periodoLetivo'],
-      cursos: (map['cursos'] as List<dynamic>)
-          .map((cursoMap) => Curso.fromMap(cursoMap))
+      disciplinas: (map['disciplinas'] as List<dynamic>)
+          .map((disciplinaMap) => Disciplina.fromMap(disciplinaMap))
           .toSet(),
       faltasNoSemestre: map['faltasNoSemestre'],
       a1: map['a1']?.toDouble(),
@@ -50,7 +50,7 @@ class Boletim {
   Map<String, dynamic> toMap() {
     print('idBoletim: $idBoletim');
     print('periodoLetivo: $periodoLetivo');
-    print('cursos: $cursos');
+    print('disciplinas: $disciplinas');
     print('faltasNoSemestre: $faltasNoSemestre');
     print('a1: $a1');
     print('a2: $a2');
@@ -61,7 +61,7 @@ class Boletim {
     return {
       'idBoletim': idBoletim,
       'periodoLetivo': periodoLetivo,
-      'cursos': cursos.map((curso) => curso.toMap()).toList(),
+      'disciplinas': disciplinas.map((disciplina) => disciplina.toMap()).toList(),
       'faltasNoSemestre': faltasNoSemestre,
       'a1': a1,
       'a2': a2,
@@ -75,7 +75,7 @@ class Boletim {
   Boletim copyWith({
     String? idBoletim,
     String? periodoLetivo,
-    Set<Curso>? cursos,
+    Set<Disciplina>? disciplinas,
     int? faltasNoSemestre,
     double? a1,
     double? a2,
@@ -87,7 +87,7 @@ class Boletim {
     return Boletim(
       idBoletim: idBoletim ?? this.idBoletim,
       periodoLetivo: periodoLetivo ?? this.periodoLetivo,
-      cursos: cursos ?? this.cursos,
+      disciplinas: disciplinas ?? this.disciplinas,
       faltasNoSemestre: faltasNoSemestre ?? this.faltasNoSemestre,
       a1: a1 ?? this.a1,
       a2: a2 ?? this.a2,

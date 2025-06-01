@@ -66,11 +66,11 @@ class _BoletimPageState extends State<BoletimPage> {
             List<Map<String, String>> disciplinas = [];
 
             for (var boletim in boletins) {
-              for (var curso in boletim.cursos) {
+              for (var disciplina in boletim.disciplinas) {
                 disciplinas.add({
                   'periodo': boletim.periodoLetivo,
-                  'codigo': curso.codigo.toString(),
-                  'disciplina': curso.nome,
+                  'codigo': disciplina.codigo.toString(),
+                  'disciplina': disciplina.nome,
                   'faltas no semestre': boletim.faltasNoSemestre.toString(),
                   'a1': boletim.a1.toString(),
                   'a2': boletim.a2.toString(),

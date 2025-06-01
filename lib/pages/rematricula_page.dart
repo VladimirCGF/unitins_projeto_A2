@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/boletim_list.dart';
-import '../models/curso.dart';
-import '../models/curso_list.dart';
+import '../models/disciplina.dart';
+import '../models/disciplina_list.dart';
 
 class RematriculaPage extends StatefulWidget {
   const RematriculaPage({super.key});
@@ -18,11 +18,11 @@ class _RematriculaPageState extends State<RematriculaPage> {
 
   bool _isLoading = false;
   bool _isInit = true;
-  final Set<Curso> _cursosSelecionados = {};
+  final Set<Disciplina> _cursosSelecionados = {};
   String _periodoLetivo = '';
 
   Future<void> _refreshCursos(BuildContext context) async {
-    await Provider.of<CursoList>(context, listen: false).loadCursos();
+    await Provider.of<DisciplinaList>(context, listen: false).loadDisciplinas();
   }
 
   @override
@@ -108,8 +108,8 @@ class _RematriculaPageState extends State<RematriculaPage> {
     }
   }
 
-  Map<dynamic, List<Curso>> _agruparCursosPorPeriodo(List<Curso> cursos) {
-    final Map<dynamic, List<Curso>> agrupados = {};
+  Map<dynamic, List<Disciplina>> _agruparCursosPorPeriodo(List<Disciplina> cursos) {
+    final Map<dynamic, List<Disciplina>> agrupados = {};
     for (var curso in cursos) {
       final key = curso.periodo == 0 ? 'Optativas' : curso.periodo;
       agrupados.putIfAbsent(key, () => []).add(curso);
@@ -127,7 +127,7 @@ class _RematriculaPageState extends State<RematriculaPage> {
 
   @override
   Widget build(BuildContext context) {
-    final cursos = Provider.of<CursoList>(context).items;
+    final cursos = Provider.of<DisciplinaList>(context).items;
 
     return Scaffold(
       appBar: AppBar(
@@ -177,7 +177,7 @@ class _RematriculaPageState extends State<RematriculaPage> {
     );
   }
 
-  List<Widget> _buildCursosAgrupados(List<Curso> cursos) {
+  List<Widget> _buildCursosAgrupados(List<Disciplina> cursos) {
     final cursosPorPeriodo = _agruparCursosPorPeriodo(cursos);
     final List<Widget> widgets = [];
 

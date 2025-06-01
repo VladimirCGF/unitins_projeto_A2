@@ -1,24 +1,24 @@
 
 
-import 'package:unitins_projeto/models/curso.dart';
+import 'package:unitins_projeto/models/disciplina.dart';
 
 class Periodo {
   final String idPeriodo;
   final String nome;
-  final List<Curso> cursos;
+  final List<Disciplina> disciplinas;
 
   Periodo({
     required this.idPeriodo,
     required this.nome,
-    this.cursos = const [],
+    this.disciplinas = const [],
   });
 
   factory Periodo.fromMap(Map<String, dynamic> map) {
     return Periodo(
       idPeriodo: map['idPeriodo'] ?? '',
       nome: map['nome'] ?? '',
-      cursos: map['cursos'] != null
-          ? (map['cursos'] as List).map((d) => Curso.fromMap(d)).toList()
+      disciplinas: map['disciplinas'] != null
+          ? (map['disciplinas'] as List).map((d) => Disciplina.fromMap(d)).toList()
           : [],
     );
   }
@@ -27,19 +27,19 @@ class Periodo {
     return {
       'idPeriodo': idPeriodo,
       'nome': nome,
-      'cursos': cursos.map((d) => d.toMap()).toList(),
+      'disciplinas': disciplinas.map((d) => d.toMap()).toList(),
     };
   }
 
   Periodo copyWith({
     String? idPeriodo,
     String? nome,
-    List<Curso>? cursos,
+    List<Disciplina>? disciplinas,
   }) {
     return Periodo(
       idPeriodo: idPeriodo ?? this.idPeriodo,
       nome: nome ?? this.nome,
-      cursos: cursos ?? this.cursos,
+      disciplinas: disciplinas ?? this.disciplinas,
     );
   }
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:unitins_projeto/components/curso_item.dart';
+import 'package:unitins_projeto/components/disciplina_item.dart';
 import 'package:unitins_projeto/components/user_item.dart';
-import 'package:unitins_projeto/models/curso_list.dart';
+import 'package:unitins_projeto/models/disciplina_list.dart';
 import 'package:unitins_projeto/models/user_list.dart';
 
 import '../components/app_drawer.dart';
