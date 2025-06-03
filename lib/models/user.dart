@@ -65,4 +65,6 @@ class User {
       boletim: boletim ?? this.boletim,
     );
   }
+
+
 }

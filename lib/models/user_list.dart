@@ -149,28 +149,49 @@ class UserList with ChangeNotifier {
     }
   }
 
-  Future<User?> buscarUsuarioPorIdUser(String idUser, String token) async {
-    final response = await http.get(
-      Uri.parse('${Constants.USER_BASE_URL}.json?auth=${auth.token}'),
-    );
+  Future<User?> buscarUsuarioPorIdUser() async {
+    print('🔍 Buscando usuário com ID: ${auth.userId}');
 
-    if (response.statusCode >= 400 || response.body == 'null') {
+    try {
+      final response = await http.get(
+        Uri.parse('${Constants.USER_BASE_URL}.json?auth=${auth.token}'), // ✅ Corrigido
+        headers: {
+          'Authorization': 'Bearer ${auth.token}',
+        },
+      );
+      print('Auth: $auth'); // ou do próprio auth provider que usa
+      print('userId usado na URL: ${auth.userId}');
+
+
+      print('🟢 Resposta da API: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        // Como o Firebase retorna um map com várias entradas,
+        // precisamos buscar a entrada que tem o mesmo idUser
+        for (final entry in data.entries) {
+          final userMap = entry.value;
+          if (userMap['idUser'] == auth.userId) {
+            final user = User.fromMap(userMap);
+            print('✅ Usuário encontrado: ${user.nome}');
+            return user;
+          }
+        }
+
+        print('⚠️ Nenhum usuário com idUser correspondente encontrado.');
+        return null;
+      } else {
+        print('⚠️ Erro na requisição: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('❌ Erro ao buscar usuário: $e');
       return null;
     }
-
-    final Map<String, dynamic> data = jsonDecode(response.body);
-    for (var entry in data.entries) {
-      final userMap = entry.value as Map<String, dynamic>;
-      if (userMap['idUser'] == idUser) {
-        return User.fromMap({
-          'idUser': entry.key,
-          ...userMap,
-        });
-      }
-    }
-
-    return null;
   }
+
+
 
 
   Future<void> removeUser(User user) async {
