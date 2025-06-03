@@ -64,6 +64,25 @@ class AppDrawer extends StatelessWidget {
               );
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.edit),
+            title: const Text('Gerenciar Matricula'),
+            onTap: () {
+              Navigator.of(context).pushReplacementNamed(
+                AppRoutes.matricula,
+              );
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.edit),
+            title: const Text('Gerenciar Disciplina Boletim'),
+            onTap: () {
+              Navigator.of(context).pushReplacementNamed(
+                AppRoutes.disciplinasBoletins,
+              );
+            },
+          ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.exit_to_app),

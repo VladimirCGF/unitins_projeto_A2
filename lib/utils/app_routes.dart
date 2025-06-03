@@ -10,8 +10,11 @@ class AppRoutes {
   static const periodoForm = '/periodo-form';
   static const courseSelectionScreen = '/courseSelectionScreen';
   static const rematricula = '/rematricula';
+  static const matricula = '/matricula';
   static const boletins = '/boletins';
   static const boletimForm = '/boletim-form';
+  static const disciplinasBoletins = '/disciplinas-boletins';
+  static const disciplinasBoletimForm = '/disciplinas-boletim-form';
 }
 
 

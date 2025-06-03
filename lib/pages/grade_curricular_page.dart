@@ -17,7 +17,8 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
   bool _isLoading = false;
   bool _isInit = true;
 
-  Future<void> _refreshCursos(BuildContext context) async {
+  //Pegar as disciplinas que foi associado ao aluno
+  Future<void> _refreshDisciplinas(BuildContext context) async {
     await Provider.of<DisciplinaList>(context, listen: false).loadDisciplinas();
   }
 
@@ -26,7 +27,7 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
     super.didChangeDependencies();
     if (_isInit) {
       setState(() => _isLoading = true);
-      _refreshCursos(context).then((_) {
+      _refreshDisciplinas(context).then((_) {
         setState(() => _isLoading = false);
       });
       _isInit = false;
@@ -35,7 +36,8 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
 
   @override
   Widget build(BuildContext context) {
-    final cursos = Provider.of<DisciplinaList>(context).items;
+    //Buscar disciplinas que foi associada ao user.idCurso>curso.disciplinas
+    final disciplinas = Provider.of<DisciplinaList>(context).items;
     return Scaffold(
       appBar: AppBar(
         title: Image.network(
@@ -48,7 +50,9 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 28),
             child: Text(
-              'Matriz Curricular - SISTEMAS DE INFORMAÇÃO',
+              'Matriz Curricular - ',
+              //Aqui pega o nome do curso pelo user.idCurso
+              // 'SISTEMAS DE INFORMAÇÃO',
               style: TextStyle(
                 fontSize: 40,
                 color: Color(0xFF656565),
@@ -58,9 +62,9 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : cursos.isEmpty
+                : disciplinas.isEmpty
                     ? const Center(child: Text('Nenhum curso encontrado'))
-                    : _buildCursosPorPeriodo(cursos),
+                    : _buildCursosPorPeriodo(disciplinas),
           ),
         ],
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:unitins_projeto/models/curso_list.dart';
+import 'package:unitins_projeto/models/disciplina_boletim_list.dart';
 import 'package:unitins_projeto/models/disciplina_list.dart';
 import 'package:unitins_projeto/models/user_list.dart';
 import 'package:unitins_projeto/pages/auth_or_home_page.dart';
@@ -8,8 +9,11 @@ import 'package:unitins_projeto/pages/boletim_form_page.dart';
 import 'package:unitins_projeto/pages/boletim_page.dart';
 import 'package:unitins_projeto/pages/curso_form_page.dart';
 import 'package:unitins_projeto/pages/cursos_page.dart';
+import 'package:unitins_projeto/pages/disciplina_boletim_page.dart';
+import 'package:unitins_projeto/pages/disciplina_boletim_page_form.dart';
 import 'package:unitins_projeto/pages/disciplina_form_page.dart';
 import 'package:unitins_projeto/pages/disciplinas_page.dart';
+import 'package:unitins_projeto/pages/matricula_page.dart';
 import 'package:unitins_projeto/pages/periodo_form_page.dart';
 import 'package:unitins_projeto/pages/periodos_page.dart';
 import 'package:unitins_projeto/pages/rematricula_page.dart';
@@ -68,13 +72,22 @@ class MyApp extends StatelessWidget {
           },
         ),
         ChangeNotifierProxyProvider<Auth, UserList>(
-          create: (_) => UserList(Auth()), // valor inicial "vazio"
+          create: (_) => UserList(Auth()),
           update: (ctx, auth, previous) => UserList(
             auth,
             previous?.items ?? [],
           ),
         ),
-
+        ChangeNotifierProxyProvider<Auth, DisciplinaBoletimList>(
+          create: (_) => DisciplinaBoletimList(),
+          update: (ctx, auth, previous) {
+            return DisciplinaBoletimList(
+              auth.token ?? '',
+              auth.userId ?? '',
+              previous?.items ?? [],
+            );
+          },
+        ),
         ChangeNotifierProxyProvider<Auth, BoletimList>(
           create: (_) => BoletimList(),
           update: (ctx, auth, previous) {
@@ -104,6 +117,10 @@ class MyApp extends StatelessWidget {
           AppRoutes.disciplinaForm: (ctx) => const DisciplinaFormPage(),
           AppRoutes.users: (ctx) => const UserPage(),
           AppRoutes.userForm: (ctx) => const UserFormPage(),
+          AppRoutes.matricula: (ctx) => const MatriculaPage(),
+          AppRoutes.disciplinasBoletins: (ctx) => const DisciplinaBoletimPage(),
+          AppRoutes.disciplinasBoletimForm: (ctx) =>
+              const DisciplinaBoletimFormPage(),
           AppRoutes.boletins: (ctx) => const BoletimPage(),
           AppRoutes.boletimForm: (ctx) => const BoletimFormPage(),
           AppRoutes.rematricula: (ctx) => const RematriculaPage(),

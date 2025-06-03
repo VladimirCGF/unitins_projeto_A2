@@ -29,4 +29,13 @@ class Store {
     final prefs = await SharedPreferences.getInstance();
     return prefs.remove(key);
   }
+
+  Future<String> getToken() async {
+    return await Store.getString('token', '');
+  }
+
+  Future<String> getUserId() async {
+    return await Store.getString('userId', '');
+  }
+
 }

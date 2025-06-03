@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:unitins_projeto/models/user_list.dart';
 
+import '../models/curso_list.dart';
 import '../models/user.dart';
 
 class UserFormPage extends StatefulWidget {
@@ -16,10 +17,11 @@ class _UserFormPageState extends State<UserFormPage> {
   final _cpf = FocusNode();
   final _email = FocusNode();
   final _matricula = FocusNode();
-  final _curso = FocusNode();
+  final _idCurso = FocusNode();
 
   final _formKey = GlobalKey<FormState>();
   final _formData = <String, Object>{};
+  String? _selectedCursoId;
 
   bool _isLoading = false;
 
@@ -28,6 +30,7 @@ class _UserFormPageState extends State<UserFormPage> {
     super.didChangeDependencies();
 
     Provider.of<UserList>(context, listen: false).loadUser();
+    Provider.of<CursoList>(context, listen: false).loadCurso();
 
     if (_formData.isEmpty) {
       final arg = ModalRoute.of(context)?.settings.arguments;
@@ -39,7 +42,11 @@ class _UserFormPageState extends State<UserFormPage> {
         _formData['cpf'] = user.cpf;
         _formData['email'] = user.email;
         _formData['matricula'] = user.matricula;
-        _formData['curso'] = user.curso;
+        _formData['idCurso'] = user.idCurso;
+
+      }
+      if (_formData.containsKey('idCurso')) {
+        _selectedCursoId = _formData['idCurso']?.toString();
       }
     }
   }
@@ -50,7 +57,7 @@ class _UserFormPageState extends State<UserFormPage> {
     _cpf.dispose();
     _email.dispose();
     _matricula.dispose();
-    _curso.dispose();
+    _idCurso.dispose();
     super.dispose();
   }
 
@@ -94,10 +101,12 @@ class _UserFormPageState extends State<UserFormPage> {
 
     try {
       await userList.saveUser(_formData);
+      if (!mounted) return;  // verifica se o widget ainda está ativo
       Navigator.of(context).pop();
     } catch (error, stackTrace) {
       print('❌ ERRO AO SALVAR USER: $error');
       print(stackTrace);
+      if (!mounted) return;  // idem
       await showDialog<void>(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -112,7 +121,9 @@ class _UserFormPageState extends State<UserFormPage> {
         ),
       );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -213,23 +224,47 @@ class _UserFormPageState extends State<UserFormPage> {
                       },
                     ),
                     const SizedBox(height: 30),
-                    TextFormField(
-                      initialValue: _formData['curso']?.toString(),
-                      decoration: const InputDecoration(
-                        labelText: 'Curso do User',
-                        hintText: 'Ex: TI',
-                      ),
-                      focusNode: _curso,
-                      textInputAction: TextInputAction.done,
-                      onFieldSubmitted: (_) => _submitForm(),
-                      onSaved: (curso) =>
-                      _formData['curso'] = curso ?? '',
-                      validator: (_curso) {
-                        final curso = _curso ?? '';
-                        if (curso.trim().isEmpty) {
-                          return 'Curso é obrigatório';
+                    Consumer<CursoList>(
+                      builder: (ctx, cursoList, child) {
+                        if (cursoList.items.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
                         }
-                        return null;
+                        return DropdownButtonFormField<String>(
+                          value: _selectedCursoId,
+                          decoration: const InputDecoration(
+                            labelText: 'Curso',
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                          ),
+                          items: cursoList.items.map((curso) {
+                            return DropdownMenuItem<String>(
+                              value: curso.idCurso,
+                              child: Text(curso.nome),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedCursoId = value;
+                              _formData['idCurso'] = value ?? '';
+                            });
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Curso é obrigatório';
+                            }
+                            return null;
+                          },
+
+                          isExpanded: true,
+                          icon: const Icon(Icons.arrow_drop_down),
+                          hint: const Text('Selecione um curso'),
+                        );
                       },
                     ),
                     const SizedBox(height: 30),

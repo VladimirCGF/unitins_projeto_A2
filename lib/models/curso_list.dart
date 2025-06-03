@@ -7,13 +7,11 @@ import 'package:http/http.dart' as http;
 import '../exceptions/http_exception.dart';
 import '../models/curso.dart';
 import '../utils/constants.dart';
-import 'curso.dart';
 
 class CursoList with ChangeNotifier {
   final String _token;
   final String _userId;
   List<Curso> _items = [];
-
 
   List<Curso> get items => [..._items];
 
@@ -53,9 +51,8 @@ class CursoList with ChangeNotifier {
     bool hasId = data['idCurso'] != null;
 
     final curso = Curso(
-      idCurso: hasId
-          ? data['idCurso'] as String
-          : Random().nextDouble().toString(),
+      idCurso:
+          hasId ? data['idCurso'] as String : Random().nextDouble().toString(),
       nome: data['nome'] as String,
     );
 
@@ -120,4 +117,3 @@ class CursoList with ChangeNotifier {
     }
   }
 }
-

@@ -18,7 +18,7 @@ class _RematriculaPageState extends State<RematriculaPage> {
 
   bool _isLoading = false;
   bool _isInit = true;
-  final Set<Disciplina> _cursosSelecionados = {};
+  final Set<Disciplina> _disciplinasSelecionados = {};
   String _periodoLetivo = '';
 
   Future<void> _refreshCursos(BuildContext context) async {
@@ -37,8 +37,6 @@ class _RematriculaPageState extends State<RematriculaPage> {
     final semestre = now.month < 7 ? '01' : '02';
     return '$ano/$semestre';
   }
-
-
 
   @override
   void didChangeDependencies() {
@@ -65,15 +63,13 @@ class _RematriculaPageState extends State<RematriculaPage> {
 
     if (!formValid) return;
 
-// Salva os campos no _formData
     _formKey.currentState!.save();
 
     print('Dados do boletim: $_formData');
 
-
     print('Dados do boletim: $_formData');
     _formData['cursos'] =
-        _cursosSelecionados.map((curso) => curso.toMap()).toList();
+        _disciplinasSelecionados.map((curso) => curso.toMap()).toList();
     _formData['periodoLetivo'] = _periodoLetivo;
     print('Dados do boletim: $_formData');
 
@@ -108,7 +104,8 @@ class _RematriculaPageState extends State<RematriculaPage> {
     }
   }
 
-  Map<dynamic, List<Disciplina>> _agruparCursosPorPeriodo(List<Disciplina> cursos) {
+  Map<dynamic, List<Disciplina>> _agruparCursosPorPeriodo(
+      List<Disciplina> cursos) {
     final Map<dynamic, List<Disciplina>> agrupados = {};
     for (var curso in cursos) {
       final key = curso.periodo == 0 ? 'Optativas' : curso.periodo;
@@ -167,7 +164,7 @@ class _RematriculaPageState extends State<RematriculaPage> {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: ElevatedButton.icon(
-                    onPressed: _cursosSelecionados.isEmpty ? null : _submitForm,
+                    onPressed: _disciplinasSelecionados.isEmpty ? null : _submitForm,
                     icon: const Icon(Icons.check),
                     label: const Text('Confirmar Rematrícula'),
                   ),
@@ -195,13 +192,13 @@ class _RematriculaPageState extends State<RematriculaPage> {
         widgets.add(CheckboxListTile(
           title: Text('${curso.nome} (${curso.codigo})'),
           subtitle: Text('Carga Horária: ${curso.ch}h'),
-          value: _cursosSelecionados.contains(curso),
+          value: _disciplinasSelecionados.contains(curso),
           onChanged: (bool? selected) {
             setState(() {
               if (selected == true) {
-                _cursosSelecionados.add(curso);
+                _disciplinasSelecionados.add(curso);
               } else {
-                _cursosSelecionados.remove(curso);
+                _disciplinasSelecionados.remove(curso);
               }
             });
           },

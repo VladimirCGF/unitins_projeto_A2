@@ -1,10 +1,13 @@
+import 'disciplina_boletim.dart';
+
 class User {
   final String idUser;
   final String nome;
   final String cpf;
   final String email;
   final String matricula;
-  final String curso;
+  final String idCurso;
+  final List<DisciplinaBoletim> boletim;
 
   User({
     required this.idUser,
@@ -12,7 +15,8 @@ class User {
     required this.cpf,
     required this.email,
     required this.matricula,
-    required this.curso,
+    required this.idCurso,
+    this.boletim = const [],
   });
 
   factory User.fromMap(Map<String, dynamic> map) {
@@ -22,9 +26,14 @@ class User {
       cpf: map['cpf'],
       email: map['email'],
       matricula: map['matricula'],
-      curso: map['curso'],
+      idCurso: map['idCurso'],
+      boletim: (map['boletim'] as List<dynamic>?)
+              ?.map((e) => DisciplinaBoletim.fromMap(e))
+              .toList() ??
+          [],
     );
   }
+
   Map<String, dynamic> toMap() {
     return {
       'idUser': idUser,
@@ -32,7 +41,8 @@ class User {
       'cpf': cpf,
       'email': email,
       'matricula': matricula,
-      'curso': curso,
+      'idCurso': idCurso,
+      'boletim': boletim.map((e) => e.toMap()).toList(),
     };
   }
 
@@ -42,7 +52,8 @@ class User {
     String? cpf,
     String? email,
     String? matricula,
-    String? curso,
+    String? idCurso,
+    List<DisciplinaBoletim>? boletim,
   }) {
     return User(
       idUser: idUser ?? this.idUser,
@@ -50,7 +61,8 @@ class User {
       cpf: cpf ?? this.cpf,
       email: email ?? this.email,
       matricula: matricula ?? this.matricula,
-      curso: curso ?? this.curso,
+      idCurso: idCurso ?? this.idCurso,
+      boletim: boletim ?? this.boletim,
     );
   }
 }
