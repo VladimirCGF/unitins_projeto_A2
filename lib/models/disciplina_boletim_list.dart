@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 import '../exceptions/http_exception.dart';
 import '../utils/constants.dart';
@@ -246,74 +248,74 @@ class DisciplinaBoletimList with ChangeNotifier {
 
 
 
-  Future<List<DisciplinaBoletim>> fetchDisciplinasPendentes() async {
-    final token = Auth().token;
-    final userId = Auth().userId;
+  Future<List<DisciplinaBoletim>> fetchDisciplinasPendentes(BuildContext context) async {
+    final auth = Provider.of<Auth>(context, listen: false);
+    final userId = auth.userId;
+
+    if (userId == null) {
+      print('❌ ERRO: userId está null. Usuário não está logado corretamente.');
+      return [];
+    }
 
     final response = await http.get(
-      Uri.parse('${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$userId.json?auth=$token'),
+      Uri.parse('${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$userId.json?auth=$_token'),
     );
 
-    // Verifica se houve erro na resposta
-    final decodedBody = jsonDecode(response.body);
-
-    if (decodedBody is String) {
-      print('❌ Erro: Firebase retornou uma string (possível "Permission denied"): $decodedBody');
+    if (response.statusCode >= 400) {
+      print('❌ Erro de requisição: ${response.statusCode}');
       return [];
     }
 
-    if (decodedBody == null || decodedBody is! Map<String, dynamic>) {
-      print('❌ Erro: dados inválidos ou nulos retornados.');
-      return [];
-    }
+    final data = jsonDecode(response.body);
+
+    if (data == null) return [];
 
     final List<DisciplinaBoletim> pendentes = [];
 
-    decodedBody.forEach((id, value) {
+    data.forEach((id, value) {
       if (value is Map<String, dynamic>) {
         final disc = DisciplinaBoletim.fromMap(value);
-
         if (disc.status == 'PD' && disc.idUser == userId) {
           pendentes.add(disc);
         }
-
       } else {
         print('⚠️ Ignorado: $id - valor não é um Map: $value');
       }
     });
 
-    print('🔥 Disciplinas retornadas:');
-    decodedBody.forEach((id, value) {
-      if (value is Map<String, dynamic>) {
-        print('➖ ID: $id, STATUS: ${value['status']}, USER: ${value['idUser']}');
-      } else {
-        print('⚠️ Valor inesperado para $id: $value');
-      }
-    });
-
-    print('🔍 Usuário atual: $userId');
-
+    print('📋 Disciplinas com status PD: ${pendentes.length}');
     return pendentes;
   }
 
 
 
-  Future<void> rematriculaDisciplinaBoletim(DisciplinaBoletim d, String token) async {
+
+  Future<bool> rematriculaDisciplinaBoletim(DisciplinaBoletim d) async {
     final idUser = d.idUser;
     final idDisciplinaBoletim = d.idDisciplinaBoletim;
 
     if (idUser == null || idUser.isEmpty) {
       print('❌ idUser vazio ou nulo!');
-      return;
+      return false;
     }
     if (idDisciplinaBoletim == null || idDisciplinaBoletim.isEmpty) {
       print('❌ idDisciplinaBoletim vazio ou nulo!');
-      return;
+      return false;
     }
 
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('❌ Usuário não autenticado! Abortando atualização para disciplina $idDisciplinaBoletim');
+      return false;
+    }
+
+    final token = await user.getIdToken();
     final url = Uri.parse(
-        '${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$idUser/$idDisciplinaBoletim.json?auth=$token'
+      '${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$idUser/$idDisciplinaBoletim.json?auth=$token',
     );
+
+    print('🔑 Usando token: $token');
+    print('🌐 Atualizando disciplina $idDisciplinaBoletim em $url');
 
     final response = await http.patch(
       url,
@@ -322,11 +324,14 @@ class DisciplinaBoletimList with ChangeNotifier {
     );
 
     if (response.statusCode == 200) {
-      print('✅ Atualizado via HTTP para MT: $idDisciplinaBoletim');
+      print('✅ Disciplina $idDisciplinaBoletim rematriculada como MT');
+      return true;
     } else {
-      print('❌ Falha ao atualizar via HTTP: ${response.statusCode} - ${response.body}');
+      print('❌ Falha ao atualizar disciplina $idDisciplinaBoletim: ${response.statusCode} - ${response.body}');
+      return false;
     }
   }
+
 
 
 

@@ -30,7 +30,7 @@ class _RematriculaPageState extends State<RematriculaPage> {
 
     try {
       final list = Provider.of<DisciplinaBoletimList>(context, listen: false);
-      final disciplinas = await list.fetchDisciplinasPendentes();
+      final disciplinas = await list.fetchDisciplinasPendentes(context);
 
       setState(() {
         _disciplinasPendentes = disciplinas;
@@ -63,7 +63,7 @@ class _RematriculaPageState extends State<RematriculaPage> {
           continue;
         }
 
-        await list.rematriculaDisciplinaBoletim(d, token);
+        await list.rematriculaDisciplinaBoletim(d);
         print('✅ Disciplina ${d.idDisciplinaBoletim} rematriculada como MT');
       }
 
