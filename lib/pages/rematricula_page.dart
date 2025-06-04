@@ -1,100 +1,88 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../models/boletim_list.dart';
-import '../models/disciplina.dart';
-import '../models/disciplina_list.dart';
+import 'package:unitins_projeto/models/auth.dart';
+import 'package:unitins_projeto/models/disciplina_boletim.dart';
+import 'package:unitins_projeto/models/user.dart';
+import 'package:unitins_projeto/models/disciplina_boletim_list.dart';
 
 class RematriculaPage extends StatefulWidget {
-  const RematriculaPage({super.key});
+  final User user;
+
+  const RematriculaPage({Key? key, required this.user}) : super(key: key);
 
   @override
   State<RematriculaPage> createState() => _RematriculaPageState();
 }
 
 class _RematriculaPageState extends State<RematriculaPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _formData = <String, Object>{};
-
-  bool _isLoading = false;
-  bool _isInit = true;
-  final Set<Disciplina> _disciplinasSelecionados = {};
-  String _periodoLetivo = '';
-
-  Future<void> _refreshCursos(BuildContext context) async {
-    await Provider.of<DisciplinaList>(context, listen: false).loadDisciplinas();
-  }
+  final Set<DisciplinaBoletim> _selecionadas = {};
+  List<DisciplinaBoletim> _disciplinasPendentes = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _periodoLetivo = gerarPeriodoLetivoAtual();
+    _carregarDisciplinasPendentes();
   }
 
-  String gerarPeriodoLetivoAtual() {
-    final now = DateTime.now();
-    final ano = now.year;
-    final semestre = now.month < 7 ? '01' : '02';
-    return '$ano/$semestre';
-  }
+  Future<void> _carregarDisciplinasPendentes() async {
+    setState(() => _isLoading = true);
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_isInit) {
-      setState(() => _isLoading = true);
-      _refreshCursos(context).then((_) {
-        setState(() => _isLoading = false);
+    try {
+      final list = Provider.of<DisciplinaBoletimList>(context, listen: false);
+      final disciplinas = await list.fetchDisciplinasPendentes();
+
+      setState(() {
+        _disciplinasPendentes = disciplinas;
       });
 
-      final arg = ModalRoute.of(context)?.settings.arguments;
-      if (arg != null && arg is String) {
-        _periodoLetivo = arg;
+      print('📋 Disciplinas com status PD:');
+      for (var d in disciplinas) {
+        print('➡️ ID: ${d.idDisciplina}, Status: ${d.status}');
       }
-
-      _isInit = false;
+    } catch (e) {
+      print('Erro ao carregar disciplinas: $e');
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _submitForm() async {
-    print('SubmitForm chamado');
-    final formValid = _formKey.currentState?.validate() ?? false;
-    print('Form válido? $formValid');
+  Future<void> _submitRematricula() async {
+    if (_selecionadas.isEmpty) return;
 
-    if (!formValid) return;
-
-    _formKey.currentState!.save();
-
-    print('Dados do boletim: $_formData');
-
-    print('Dados do boletim: $_formData');
-    _formData['cursos'] =
-        _disciplinasSelecionados.map((curso) => curso.toMap()).toList();
-    _formData['periodoLetivo'] = _periodoLetivo;
-    print('Dados do boletim: $_formData');
+    String token = Auth().token.toString();
 
     setState(() => _isLoading = true);
 
     try {
-      print('Tentando salvar boletim...');
-      await Provider.of<BoletimList>(
-        context,
-        listen: false,
-      ).saveBoletim(_formData);
-      print('Boletim salvo com sucesso');
+      final list = Provider.of<DisciplinaBoletimList>(context, listen: false);
+
+      for (var d in _selecionadas) {
+        if (d.idDisciplinaBoletim == null || d.idDisciplinaBoletim!.isEmpty) {
+          print('⚠️ Ignorando disciplina sem idDisciplinaBoletim: ${d.nomeDisciplina}');
+          continue;
+        }
+
+        await list.rematriculaDisciplinaBoletim(d, token);
+        print('✅ Disciplina ${d.idDisciplinaBoletim} rematriculada como MT');
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Rematrícula confirmada com sucesso!')),
+      );
 
       Navigator.of(context).pop();
-    } catch (error) {
-      print('Erro ao salvar rematrícula: $error');
-      await showDialog<void>(
+    } catch (e) {
+      print('Erro ao rematricular: $e');
+      showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Ocorreu um erro!'),
-          content: const Text('Ocorreu um erro ao salvar o período.'),
+          title: const Text('Erro'),
+          content: Text('Erro ao confirmar rematrícula: $e'),
           actions: [
             TextButton(
-              child: const Text('Ok'),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('OK'),
             ),
           ],
         ),
@@ -104,108 +92,47 @@ class _RematriculaPageState extends State<RematriculaPage> {
     }
   }
 
-  Map<dynamic, List<Disciplina>> _agruparCursosPorPeriodo(
-      List<Disciplina> cursos) {
-    final Map<dynamic, List<Disciplina>> agrupados = {};
-    for (var curso in cursos) {
-      final key = curso.periodo == 0 ? 'Optativas' : curso.periodo;
-      agrupados.putIfAbsent(key, () => []).add(curso);
-    }
-
-    final sortedKeys = agrupados.keys.toList()
-      ..sort((a, b) {
-        if (a == 'Optativas') return 1;
-        if (b == 'Optativas') return -1;
-        return a.compareTo(b);
-      });
-
-    return {for (var key in sortedKeys) key: agrupados[key]!};
-  }
-
   @override
   Widget build(BuildContext context) {
-    final cursos = Provider.of<DisciplinaList>(context).items;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Image.network(
-          'https://www.unitins.br/uniPerfil/Logomarca/Imagem/09997c779523a61bd01bb69b0a789242',
-          height: 80,
-        ),
-      ),
+      appBar: AppBar(title: const Text('Rematrícula por Boletim')),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
+          : _disciplinasPendentes.isEmpty
+          ? const Center(child: Text('Nenhuma disciplina pendente.'))
           : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 28, vertical: 20),
-                  child: Text(
-                    'Rematrícula',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF0949B1),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: () => _refreshCursos(context),
-                    child: Form(
-                      key: _formKey,
-                      child: ListView(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        children: _buildCursosAgrupados(cursos),
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ElevatedButton.icon(
-                    onPressed: _disciplinasSelecionados.isEmpty ? null : _submitForm,
-                    icon: const Icon(Icons.check),
-                    label: const Text('Confirmar Rematrícula'),
-                  ),
-                ),
-              ],
+        children: [
+          Expanded(
+            child: ListView(
+              children: _disciplinasPendentes.map((disc) {
+                return CheckboxListTile(
+                  title: Text(disc.nomeDisciplina),
+                  subtitle: Text('Status atual: ${disc.status}'),
+                  value: _selecionadas.contains(disc),
+                  onChanged: (bool? selected) {
+                    setState(() {
+                      if (selected == true) {
+                        _selecionadas.add(disc);
+                      } else {
+                        _selecionadas.remove(disc);
+                      }
+                    });
+                  },
+                );
+              }).toList(),
             ),
-    );
-  }
-
-  List<Widget> _buildCursosAgrupados(List<Disciplina> cursos) {
-    final cursosPorPeriodo = _agruparCursosPorPeriodo(cursos);
-    final List<Widget> widgets = [];
-
-    cursosPorPeriodo.forEach((periodo, lista) {
-      widgets.add(
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Text(
-            periodo == 'Optativas' ? 'Optativas' : '$periodoº Período',
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-        ),
-      );
-      for (var curso in lista) {
-        widgets.add(CheckboxListTile(
-          title: Text('${curso.nome} (${curso.codigo})'),
-          subtitle: Text('Carga Horária: ${curso.ch}h'),
-          value: _disciplinasSelecionados.contains(curso),
-          onChanged: (bool? selected) {
-            setState(() {
-              if (selected == true) {
-                _disciplinasSelecionados.add(curso);
-              } else {
-                _disciplinasSelecionados.remove(curso);
-              }
-            });
-          },
-        ));
-      }
-    });
-
-    return widgets;
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.check),
+              label: const Text('Confirmar Rematrícula'),
+              onPressed:
+              _selecionadas.isEmpty ? null : _submitRematricula,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

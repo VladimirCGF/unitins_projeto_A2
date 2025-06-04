@@ -21,22 +21,22 @@ class User {
 
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
-      idUser: map['idUser'],
-      nome: map['nome'],
-      cpf: map['cpf'],
-      email: map['email'],
-      matricula: map['matricula'],
-      idCurso: map['idCurso'],
+      idUser: map['idUser'] ?? '',
+      nome: map['nome'] ?? '',
+      cpf: map['cpf'] ?? '',
+      email: map['email'] ?? '',
+      matricula: map['matricula'] ?? '',
+      idCurso: map['idCurso'] ?? '',
       boletim: (map['boletim'] as List<dynamic>?)
-              ?.map((e) => DisciplinaBoletim.fromMap(e))
-              .toList() ??
+          ?.map((e) => DisciplinaBoletim.fromMap(e))
+          .toList() ??
           [],
     );
   }
 
+
   Map<String, dynamic> toMap() {
     return {
-      'idUser': idUser,
       'nome': nome,
       'cpf': cpf,
       'email': email,
@@ -65,6 +65,4 @@ class User {
       boletim: boletim ?? this.boletim,
     );
   }
-
-
 }

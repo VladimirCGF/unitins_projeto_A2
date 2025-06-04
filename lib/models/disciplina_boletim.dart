@@ -1,6 +1,7 @@
 class DisciplinaBoletim {
   final String idDisciplinaBoletim;
   final String idDisciplina;
+  final String nomeDisciplina;
   final String idUser;
   final String status;
   final double? a1;
@@ -13,6 +14,7 @@ class DisciplinaBoletim {
   DisciplinaBoletim({
     required this.idDisciplinaBoletim,
     required this.idDisciplina,
+    required this.nomeDisciplina,
     required this.idUser,
     required this.status,
     required this.a1,
@@ -27,6 +29,23 @@ class DisciplinaBoletim {
     return {
       'idDisciplinaBoletim': idDisciplinaBoletim,
       'idDisciplina': idDisciplina,
+      'nomeDisciplina': nomeDisciplina,
+      'idUser': idUser,
+      'status': status,
+      'a1': a1,
+      'a2': a2,
+      'exameFinal': exameFinal,
+      'mediaSemestral': mediaSemestral,
+      'mediaFinal': mediaFinal,
+      'faltasNoSemestre': faltasNoSemestre,
+    };
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'idDisciplinaBoletim': idDisciplinaBoletim,
+      'idDisciplina': idDisciplina,
+      'nomeDisciplina': nomeDisciplina,
       'idUser': idUser,
       'status': status,
       'a1': a1,
@@ -42,6 +61,7 @@ class DisciplinaBoletim {
     return DisciplinaBoletim(
       idDisciplinaBoletim: map['idDisciplinaBoletim'],
       idDisciplina: map['idDisciplina'],
+      nomeDisciplina: map['nomeDisciplina'],
       idUser: map['idUser'],
       status: map['status'],
       a1: map['a1']?.toDouble(),
@@ -56,6 +76,7 @@ class DisciplinaBoletim {
   DisciplinaBoletim copyWith({
     String? idDisciplinaBoletim,
     String? idDisciplina,
+    String? nomeDisciplina,
     String? idUser,
     String? status,
     double? a1,
@@ -68,6 +89,7 @@ class DisciplinaBoletim {
     return DisciplinaBoletim(
       idDisciplinaBoletim: idDisciplinaBoletim ?? this.idDisciplinaBoletim,
       idDisciplina: idDisciplina ?? this.idDisciplina,
+      nomeDisciplina: nomeDisciplina ?? this.nomeDisciplina,
       idUser: idUser ?? this.idUser,
       status: status ?? this.status,
       a1: a1 ?? this.a1,

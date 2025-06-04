@@ -17,7 +17,6 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
   bool _isLoading = false;
   bool _isInit = true;
 
-  //Pegar as disciplinas que foi associado ao aluno
   Future<void> _refreshDisciplinas(BuildContext context) async {
     await Provider.of<DisciplinaList>(context, listen: false).loadDisciplinas();
   }
@@ -36,7 +35,6 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
 
   @override
   Widget build(BuildContext context) {
-    //Buscar disciplinas que foi associada ao user.idCurso>curso.disciplinas
     final disciplinas = Provider.of<DisciplinaList>(context).items;
     return Scaffold(
       appBar: AppBar(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:unitins_projeto/pages/CourseSelectionScreen.dart';
 import 'package:unitins_projeto/pages/rematricula_page.dart';
 import 'package:unitins_projeto/utils/app_routes.dart';
@@ -6,6 +7,8 @@ import 'package:unitins_projeto/utils/app_routes.dart';
 import '../components/app_drawer.dart';
 import '../components/custom_card.dart';
 import '../components/custom_footer.dart';
+import '../models/auth.dart';
+import '../models/user_list.dart';
 import 'grade_curricular_page.dart';
 
 class Dashboard extends StatefulWidget {
@@ -95,8 +98,7 @@ class _DashboardState extends State<Dashboard>
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                            const CourseSelectionScreen(),
+                            builder: (context) => const CourseSelectionScreen(),
                           ),
                         );
                       },
@@ -110,8 +112,7 @@ class _DashboardState extends State<Dashboard>
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                            const GradeCurricularPage(),
+                            builder: (context) => const GradeCurricularPage(),
                           ),
                         );
                       },
@@ -120,18 +121,35 @@ class _DashboardState extends State<Dashboard>
                     CustomCard(
                       title: 'REMATRÍCULA ONLINE',
                       description:
-                          'Fazer a rematrícula nos semestres posteriores, conforme '
+                      'Fazer a rematrícula nos semestres posteriores, conforme '
                           'calendário acadêmico. Emissão da declaração de vínculo.',
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                            const RematriculaPage(),
-                          ),
-                        );
+                      onPressed: () async {
+                        try {
+                          final user = await Provider.of<UserList>(context, listen: false)
+                              .buscarUsuarioPorIdUser();
+
+                          if (user == null) {
+                            // lidar com usuário não encontrado
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Usuário não encontrado.')),
+                            );
+                            return;
+                          }
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RematriculaPage(user: user),
+                            ),
+                          );
+                        } catch (e) {
+                          // lidar com erro
+                          print('Erro ao buscar usuário: $e');
+                        }
                       },
+
                     ),
+
                     const SizedBox(height: 12),
                     CustomCard(
                       title: 'SITUAÇÃO ACADÊMICA',

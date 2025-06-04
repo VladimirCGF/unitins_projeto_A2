@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:unitins_projeto/models/curso_list.dart';
@@ -16,11 +17,11 @@ import 'package:unitins_projeto/pages/disciplinas_page.dart';
 import 'package:unitins_projeto/pages/matricula_page.dart';
 import 'package:unitins_projeto/pages/periodo_form_page.dart';
 import 'package:unitins_projeto/pages/periodos_page.dart';
-import 'package:unitins_projeto/pages/rematricula_page.dart';
 import 'package:unitins_projeto/pages/user_form_page.dart';
 import 'package:unitins_projeto/pages/user_page.dart';
 import 'package:unitins_projeto/utils/app_routes.dart';
 
+import 'firebase_options.dart';
 import 'models/auth.dart';
 import 'models/boletim_list.dart';
 import 'models/periodo_list.dart';
@@ -28,8 +29,21 @@ import 'models/periodo_list.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(MyApp());
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    if (e.toString().contains('duplicate-app')) {
+      // Firebase já inicializado, ignora o erro
+    } else {
+      rethrow;
+    }
+  }
+
+  runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -40,6 +54,13 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           create: (_) => Auth(),
+        ),
+        ChangeNotifierProxyProvider<Auth, UserList>(
+          create: (_) => UserList(Auth()),
+          update: (ctx, auth, previous) => UserList(
+            auth,
+            previous?.items ?? [],
+          ),
         ),
         ChangeNotifierProxyProvider<Auth, PeriodoList>(
           create: (_) => PeriodoList(),
@@ -70,13 +91,6 @@ class MyApp extends StatelessWidget {
               previous?.items ?? [],
             );
           },
-        ),
-        ChangeNotifierProxyProvider<Auth, UserList>(
-          create: (_) => UserList(Auth()),
-          update: (ctx, auth, previous) => UserList(
-            auth,
-            previous?.items ?? [],
-          ),
         ),
         ChangeNotifierProxyProvider<Auth, DisciplinaBoletimList>(
           create: (_) => DisciplinaBoletimList(),
@@ -123,7 +137,6 @@ class MyApp extends StatelessWidget {
               const DisciplinaBoletimFormPage(),
           AppRoutes.boletins: (ctx) => const BoletimPage(),
           AppRoutes.boletimForm: (ctx) => const BoletimFormPage(),
-          AppRoutes.rematricula: (ctx) => const RematriculaPage(),
         },
         debugShowCheckedModeBanner: false,
       ),

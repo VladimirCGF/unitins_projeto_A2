@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -14,11 +15,11 @@ class Auth with ChangeNotifier {
   DateTime? _expiryDate;
   Timer? _logoutTimer;
 
-
   bool get isAuth {
     final isValid = _expiryDate?.isAfter(DateTime.now()) ?? false;
     return _token != null && isValid;
   }
+
 
   String? get token {
     return isAuth ? _token : null;

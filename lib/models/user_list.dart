@@ -1,10 +1,8 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import '../data/store.dart';
 import '../exceptions/auth_exception.dart';
 import '../exceptions/http_exception.dart';
 import '../models/user.dart';
@@ -35,7 +33,6 @@ class UserList with ChangeNotifier {
     this.auth, [
     this._items = const [],
   ]);
-
 
   int get itemsCount {
     return _items.length;
@@ -77,11 +74,8 @@ class UserList with ChangeNotifier {
   }
 
   Future<void> saveUser(Map<String, Object> data) async {
-    bool hasId = data['idUser'] != null;
-
-    final user = User(
-      idUser:
-          hasId ? data['idUser'] as String : Random().nextDouble().toString(),
+    final novoUsuario = User(
+      idUser: '', // Ainda será definido após o signup
       nome: data['nome'] as String,
       cpf: data['cpf'] as String,
       email: data['email'] as String,
@@ -89,18 +83,31 @@ class UserList with ChangeNotifier {
       idCurso: data['idCurso'] as String,
     );
 
-    if (hasId) {
-      return updateUser(user);
+    final isNewUser = data['idUser'] == null;
+
+    if (isNewUser) {
+      // 1. Cria o Auth com e-mail e CPF como senha
+      try {
+        await auth.signup(novoUsuario.email, novoUsuario.cpf);
+      } catch (e) {
+        throw AuthException('Erro ao registrar autenticação: $e');
+      }
+
+      // 2. Agora salva no banco usando o userId do Auth como chave
+      final userComId = novoUsuario.copyWith(idUser: auth.userId!);
+      return addUser(userComId);
     } else {
-      return addUser(user);
+      final userComId = novoUsuario.copyWith(idUser: data['idUser'] as String);
+      return updateUser(userComId);
     }
   }
 
+
   Future<void> addUser(User user) async {
-    // 1. Adiciona o usuário
-    final response = await http.post(
-      Uri.parse('${Constants.USER_BASE_URL}.json?auth=${auth.token}'),
+    final response = await http.put(
+      Uri.parse('${Constants.USER_BASE_URL}/${user.idUser}.json?auth=${auth.token}'),
       body: jsonEncode({
+        "idUser": user.idUser,
         "nome": user.nome,
         "cpf": user.cpf,
         "email": user.email,
@@ -116,16 +123,9 @@ class UserList with ChangeNotifier {
       );
     }
 
-    final newUserId = json.decode(response.body)['name'];
-
-    // 2. Cria o Auth com e-mail + CPF como senha
-    try {
-      await auth.signup(user.email, user.cpf);
-    } catch (e) {
-      throw AuthException('Erro ao registrar autenticação: $e');
-    }
     notifyListeners();
   }
+
 
   Future<void> updateUser(User user) async {
     int index = _items.indexWhere((p) => p.idUser == user.idUser);
@@ -150,49 +150,31 @@ class UserList with ChangeNotifier {
   }
 
   Future<User?> buscarUsuarioPorIdUser() async {
-    print('🔍 Buscando usuário com ID: ${auth.userId}');
+    final response = await http.get(
+      Uri.parse('${Constants.USER_BASE_URL}.json?auth=${auth.token}'),
+    );
 
-    try {
-      final response = await http.get(
-        Uri.parse('${Constants.USER_BASE_URL}.json?auth=${auth.token}'), // ✅ Corrigido
-        headers: {
-          'Authorization': 'Bearer ${auth.token}',
-        },
-      );
-      print('Auth: $auth'); // ou do próprio auth provider que usa
-      print('userId usado na URL: ${auth.userId}');
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
 
-
-      print('🟢 Resposta da API: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        // Como o Firebase retorna um map com várias entradas,
-        // precisamos buscar a entrada que tem o mesmo idUser
-        for (final entry in data.entries) {
-          final userMap = entry.value;
-          if (userMap['idUser'] == auth.userId) {
-            final user = User.fromMap(userMap);
-            print('✅ Usuário encontrado: ${user.nome}');
-            return user;
-          }
-        }
-
-        print('⚠️ Nenhum usuário com idUser correspondente encontrado.');
-        return null;
-      } else {
-        print('⚠️ Erro na requisição: ${response.statusCode}');
+      if (data == null) {
+        print('⚠️ Nenhum usuário encontrado.');
         return null;
       }
-    } catch (e) {
-      print('❌ Erro ao buscar usuário: $e');
+
+      for (final entry in data.entries) {
+        final userMap = entry.value;
+        if (userMap['idUser'] == auth.userId) {
+          final user = User.fromMap(userMap);
+          print('✅ Usuário encontrado: ${user.nome}');
+          return user;
+        }
+      }
+
+      print('⚠️ Usuário com idUser correspondente não encontrado.');
       return null;
     }
   }
-
-
-
 
   Future<void> removeUser(User user) async {
     int index = _items.indexWhere((p) => p.idUser == user.idUser);
