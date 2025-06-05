@@ -287,6 +287,44 @@ class DisciplinaBoletimList with ChangeNotifier {
     return pendentes;
   }
 
+  Future<List<DisciplinaBoletim>> fetchDisciplinasMatriculadas(BuildContext context) async {
+    final auth = Provider.of<Auth>(context, listen: false);
+    final userId = auth.userId;
+
+    if (userId == null) {
+      print('❌ ERRO: userId está null. Usuário não está logado corretamente.');
+      return [];
+    }
+
+    final response = await http.get(
+      Uri.parse('${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$userId.json?auth=$_token'),
+    );
+
+    if (response.statusCode >= 400) {
+      print('❌ Erro de requisição: ${response.statusCode}');
+      return [];
+    }
+
+    final data = jsonDecode(response.body);
+
+    if (data == null) return [];
+
+    final List<DisciplinaBoletim> pendentes = [];
+
+    data.forEach((id, value) {
+      if (value is Map<String, dynamic>) {
+        final disc = DisciplinaBoletim.fromMap(value);
+        if (disc.status == 'MT' && disc.idUser == userId) {
+          pendentes.add(disc);
+        }
+      } else {
+        print('⚠️ Ignorado: $id - valor não é um Map: $value');
+      }
+    });
+
+    print('📋 Disciplinas com status MT: ${pendentes.length}');
+    return pendentes;
+  }
 
 
 
@@ -303,18 +341,18 @@ class DisciplinaBoletimList with ChangeNotifier {
       return false;
     }
 
-    final user = FirebaseAuth.instance.currentUser;
+    final user = _userId;
     if (user == null) {
       print('❌ Usuário não autenticado! Abortando atualização para disciplina $idDisciplinaBoletim');
       return false;
     }
 
-    final token = await user.getIdToken();
+    // final token = await user.getIdToken();
     final url = Uri.parse(
-      '${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$idUser/$idDisciplinaBoletim.json?auth=$token',
+      '${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$_userId/$idDisciplinaBoletim.json?auth=$_token',
     );
 
-    print('🔑 Usando token: $token');
+    print('🔑 Usando token: $_token');
     print('🌐 Atualizando disciplina $idDisciplinaBoletim em $url');
 
     final response = await http.patch(

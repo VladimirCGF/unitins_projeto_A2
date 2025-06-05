@@ -4,6 +4,7 @@ import 'package:unitins_projeto/models/auth.dart';
 import 'package:unitins_projeto/models/disciplina_boletim.dart';
 import 'package:unitins_projeto/models/user.dart';
 import 'package:unitins_projeto/models/disciplina_boletim_list.dart';
+import 'package:unitins_projeto/pages/rematricula_confirma_page.dart';
 
 class RematriculaPage extends StatefulWidget {
   final User user;
@@ -17,12 +18,14 @@ class RematriculaPage extends StatefulWidget {
 class _RematriculaPageState extends State<RematriculaPage> {
   final Set<DisciplinaBoletim> _selecionadas = {};
   List<DisciplinaBoletim> _disciplinasPendentes = [];
+  List<DisciplinaBoletim> _disciplinasMatriculadas = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _carregarDisciplinasPendentes();
+    _carregarDisciplinasMatriculadas();
   }
 
   Future<void> _carregarDisciplinasPendentes() async {
@@ -35,10 +38,41 @@ class _RematriculaPageState extends State<RematriculaPage> {
       setState(() {
         _disciplinasPendentes = disciplinas;
       });
+    } catch (e) {
+      print('Erro ao carregar disciplinas: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
 
-      print('📋 Disciplinas com status PD:');
+  Future<void> _carregarDisciplinasMatriculadas() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final list = Provider.of<DisciplinaBoletimList>(context, listen: false);
+      final disciplinas = await list.fetchDisciplinasMatriculadas(context);
+
+      setState(() {
+        _disciplinasMatriculadas = disciplinas;
+      });
+
+      print('📋 Disciplinas com status MT:');
       for (var d in disciplinas) {
         print('➡️ ID: ${d.idDisciplina}, Status: ${d.status}');
+      }
+
+      // Se houver disciplinas MT, redirecionar para página de confirmação
+      if (disciplinas.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (ctx) => RematriculaConfirmadaPage(
+                user: widget.user,
+                disciplinasMatriculadas: disciplinas,
+              ),
+            ),
+          );
+        });
       }
     } catch (e) {
       print('Erro ao carregar disciplinas: $e');
@@ -46,6 +80,7 @@ class _RematriculaPageState extends State<RematriculaPage> {
       setState(() => _isLoading = false);
     }
   }
+
 
   Future<void> _submitRematricula() async {
     if (_selecionadas.isEmpty) return;
