@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:unitins_projeto/models/auth.dart';
 import 'package:unitins_projeto/models/disciplina_boletim.dart';
-import 'package:unitins_projeto/models/user.dart';
 import 'package:unitins_projeto/models/disciplina_boletim_list.dart';
+import 'package:unitins_projeto/models/user.dart';
 import 'package:unitins_projeto/pages/rematricula_confirma_page.dart';
 
 class RematriculaPage extends StatefulWidget {
   final User user;
 
-  const RematriculaPage({Key? key, required this.user}) : super(key: key);
+  const RematriculaPage({super.key, required this.user});
 
   @override
   State<RematriculaPage> createState() => _RematriculaPageState();
@@ -60,27 +60,12 @@ class _RematriculaPageState extends State<RematriculaPage> {
       for (var d in disciplinas) {
         print('➡️ ID: ${d.idDisciplina}, Status: ${d.status}');
       }
-
-      // Se houver disciplinas MT, redirecionar para página de confirmação
-      if (disciplinas.isNotEmpty) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (ctx) => RematriculaConfirmadaPage(
-                user: widget.user,
-                disciplinasMatriculadas: disciplinas,
-              ),
-            ),
-          );
-        });
-      }
     } catch (e) {
       print('Erro ao carregar disciplinas: $e');
     } finally {
       setState(() => _isLoading = false);
     }
   }
-
 
   Future<void> _submitRematricula() async {
     if (_selecionadas.isEmpty) return;
@@ -94,7 +79,8 @@ class _RematriculaPageState extends State<RematriculaPage> {
 
       for (var d in _selecionadas) {
         if (d.idDisciplinaBoletim == null || d.idDisciplinaBoletim!.isEmpty) {
-          print('⚠️ Ignorando disciplina sem idDisciplinaBoletim: ${d.nomeDisciplina}');
+          print(
+              '⚠️ Ignorando disciplina sem idDisciplinaBoletim: ${d.nomeDisciplina}');
           continue;
         }
 
@@ -129,45 +115,61 @@ class _RematriculaPageState extends State<RematriculaPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool _showAppBar = true;
+    if (_disciplinasMatriculadas.isNotEmpty) {
+      setState(() {
+        _showAppBar = false;
+      });
+      // mostra RematriculaConfirmadaPage no body
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Rematrícula por Boletim')),
+      appBar: _showAppBar
+          ? AppBar(title: const Text('Rematrícula por Boletim'))
+          : null,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _disciplinasPendentes.isEmpty
-          ? const Center(child: Text('Nenhuma disciplina pendente.'))
-          : Column(
-        children: [
-          Expanded(
-            child: ListView(
-              children: _disciplinasPendentes.map((disc) {
-                return CheckboxListTile(
-                  title: Text(disc.nomeDisciplina),
-                  subtitle: Text('Status atual: ${disc.status}'),
-                  value: _selecionadas.contains(disc),
-                  onChanged: (bool? selected) {
-                    setState(() {
-                      if (selected == true) {
-                        _selecionadas.add(disc);
-                      } else {
-                        _selecionadas.remove(disc);
-                      }
-                    });
-                  },
-                );
-              }).toList(),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.check),
-              label: const Text('Confirmar Rematrícula'),
-              onPressed:
-              _selecionadas.isEmpty ? null : _submitRematricula,
-            ),
-          ),
-        ],
-      ),
+              ? const Center(child: Text('Nenhuma disciplina pendente.'))
+              : _disciplinasMatriculadas.isNotEmpty
+                  ? RematriculaConfirmadaPage(
+                      disciplinasMatriculadas: _disciplinasMatriculadas,
+                      user: widget.user,
+                    )
+                  : Column(
+                      children: [
+                        Expanded(
+                          child: ListView(
+                            children: _disciplinasPendentes.map((disc) {
+                              return CheckboxListTile(
+                                title: Text(disc.nomeDisciplina),
+                                subtitle: Text('Status atual: ${disc.status}'),
+                                value: _selecionadas.contains(disc),
+                                onChanged: (bool? selected) {
+                                  setState(() {
+                                    if (selected == true) {
+                                      _selecionadas.add(disc);
+                                    } else {
+                                      _selecionadas.remove(disc);
+                                    }
+                                  });
+                                },
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.check),
+                            label: const Text('Confirmar Rematrícula'),
+                            onPressed: _selecionadas.isEmpty
+                                ? null
+                                : _submitRematricula,
+                          ),
+                        ),
+                      ],
+                    ),
     );
   }
 }

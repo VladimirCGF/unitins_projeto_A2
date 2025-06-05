@@ -93,6 +93,14 @@ class CursoList with ChangeNotifier {
     }
   }
 
+  Curso? findByCursoForIDCurso(String idCurso) {
+    try {
+      return _items.firstWhere((curso) => curso.idCurso == idCurso);
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<void> removeCurso(Curso curso) async {
     int index = _items.indexWhere((p) => p.idCurso == curso.idCurso);
 

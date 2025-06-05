@@ -100,7 +100,7 @@ class _GradeCurricularPageState extends State<GradeCurricularPage> {
                   _buildPeriodoComCH(
                     periodo: int.tryParse(periodo) != null
                         ? '$periodoº Período'
-                        : periodo, // se não for número, exibe direto
+                        : periodo,
                     cursos: cursosPorPeriodo[periodo]!,
                   ),
                 Padding(

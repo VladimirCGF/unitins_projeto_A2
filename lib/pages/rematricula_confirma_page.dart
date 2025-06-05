@@ -1,108 +1,132 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:unitins_projeto/models/curso_list.dart';
+
+import '../components/custom_footer.dart';
 import '../models/disciplina_boletim.dart';
-import '../models/disciplina_boletim_list.dart';
 import '../models/user.dart';
 
-class RematriculaConfirmadaPage extends StatelessWidget {
+class RematriculaConfirmadaPage extends StatefulWidget {
   final User user;
   final List<DisciplinaBoletim> disciplinasMatriculadas;
 
   const RematriculaConfirmadaPage({
     super.key,
-    required this.user,
     required this.disciplinasMatriculadas,
+    required this.user,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final disciplinasMT = disciplinasMatriculadas
-        .where((d) => d.status == 'MT')
-        .toList();
+  State<RematriculaConfirmadaPage> createState() =>
+      _RematriculaConfirmadaPageState();
+}
 
-    final User user;
-    final nomeUsuario = 'Aluno';
+class _RematriculaConfirmadaPageState extends State<RematriculaConfirmadaPage> {
+  @override
+  void initState() {
+    super.initState();
+    _loadCursos();
+  }
+
+  Future<void> _loadCursos() async {
+    final cursoList = Provider.of<CursoList>(context, listen: false);
+    await cursoList.loadCurso();
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cursoList = Provider.of<CursoList>(context);
+    final curso = cursoList.findByCursoForIDCurso(widget.user.idCurso);
+
+    if (curso == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final nomeUsuario = widget.user.nome;
     final semestre = '2025/01';
-    final curso = 'SISTEMAS DE INFORMAÇÃO';
+    final nomeCurso = curso != null ? curso.nome : 'Curso não encontrado';
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Rematrícula - Solicitação Confirmada'),
-        centerTitle: true,
+        title: Image.network(
+          'https://www.unitins.br/uniPerfil/Logomarca/Imagem/09997c779523a61bd01bb69b0a789242',
+          height: 40,
+        ),
+        backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.black54),
+        elevation: 1,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {},
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: ListView(
+        child: Column(
           children: [
-            Breadcrumbs(),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFDDF2FD),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: RichText(
-                text: TextSpan(
-                  style: const TextStyle(color: Colors.black, fontSize: 16),
-                  children: [
-                    const TextSpan(text: 'Prezado(a) aluno(a) '),
-                    TextSpan(
-                      text: nomeUsuario,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+            Expanded(
+              child: ListView(
+                children: [
+                  const Text(
+                    'Rematrícula - Solicitação Confirmada',
+                    style: TextStyle(
+                      fontFamily: 'OpenSans',
+                      fontSize: 30,
+                      color: Color(0xFF094AB2),
+                      fontWeight: FontWeight.w300,
                     ),
-                    const TextSpan(text: ',\n\nSua rematrícula no semestre '),
-                    TextSpan(
-                      text: semestre,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Breadcrumbs(),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDDF2FD),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    const TextSpan(text: ' está confirmada para o curso '),
-                    TextSpan(
-                      text: curso,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const TextSpan(text: '.\n\n'),
-                    const TextSpan(
-                      text:
-                      'Clique aqui para imprimir seu comprovante de matrícula.\nClique aqui para imprimir o Termo da Rematrícula Online.',
-                      style: TextStyle(decoration: TextDecoration.underline),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            if (disciplinasMT.isNotEmpty) ...[
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFEBEB),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.warning, color: Colors.red),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Pendência(s)! Você possui pendência de documento(s), favor procurar a secretaria.',
-                        style: TextStyle(color: Colors.red),
+                    child: RichText(
+                      text: TextSpan(
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 16),
+                        children: [
+                          const TextSpan(text: 'Prezado(a) aluno(a) '),
+                          TextSpan(
+                            text: nomeUsuario,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black),
+                          ),
+                          const TextSpan(
+                              text: ',\n\nSua rematrícula no semestre '),
+                          TextSpan(
+                            text: semestre,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const TextSpan(
+                              text: ' está confirmada para o curso '),
+                          TextSpan(
+                            text: nomeCurso,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black),
+                          ),
+                          const TextSpan(text: '.\n\n'),
+                          const TextSpan(
+                            text:
+                                'Clique aqui para imprimir seu comprovante de matrícula.\nClique aqui para imprimir o Termo da Rematrícula Online.',
+                            style: TextStyle(color: Colors.blue),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              const Text(
-                'Disciplinas com status "MT":',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              ...disciplinasMT.map((d) => ListTile(
-                leading: const Icon(Icons.book),
-                title: Text(d.nomeDisciplina ?? 'Sem nome'),
-                subtitle: Text('Status: ${d.status}'),
-              )),
-            ]
+            ),
+            const CustomFooter(),
           ],
         ),
       ),
@@ -118,10 +142,10 @@ class Breadcrumbs extends StatelessWidget {
     return Wrap(
       spacing: 6,
       children: const [
-        Text('Apresentação /', style: TextStyle(color: Colors.grey)),
-        Text('Atualizar Dados Pessoais /', style: TextStyle(color: Colors.grey)),
-        Text('Quadro de Horário /', style: TextStyle(color: Colors.grey)),
-        Text('Quadro de Horário'),
+        Text('Apresentação /', style: TextStyle(color: Colors.black45)),
+        Text('Atualizar Dados Pessoais /',
+            style: TextStyle(color: Colors.black45)),
+        Text('Quadro de Horário /', style: TextStyle(color: Colors.black45)),
       ],
     );
   }
