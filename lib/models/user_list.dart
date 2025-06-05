@@ -176,6 +176,14 @@ class UserList with ChangeNotifier {
     }
   }
 
+  User? findByUserForID(String idUser) {
+    try {
+      return _items.firstWhere((user) => user.idUser == idUser);
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<void> removeUser(User user) async {
     int index = _items.indexWhere((p) => p.idUser == user.idUser);
 

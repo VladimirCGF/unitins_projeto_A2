@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:unitins_projeto/pages/CourseSelectionScreen.dart';
 import 'package:unitins_projeto/pages/rematricula_page.dart';
+import 'package:unitins_projeto/pages/situacao_academica_page.dart';
 import 'package:unitins_projeto/utils/app_routes.dart';
 
 import '../components/app_drawer.dart';
@@ -127,15 +128,12 @@ class _DashboardState extends State<Dashboard>
                         try {
                           final user = await Provider.of<UserList>(context, listen: false)
                               .buscarUsuarioPorIdUser();
-
                           if (user == null) {
-                            // lidar com usuário não encontrado
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text('Usuário não encontrado.')),
                             );
                             return;
                           }
-
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -156,7 +154,27 @@ class _DashboardState extends State<Dashboard>
                       description:
                           'Veja a sua situação junto a secretaria e demais departamentos '
                           'da unitins.',
-                      onPressed: () {},
+                      onPressed: () async {
+                        try {
+                          final user = await Provider.of<UserList>(context, listen: false)
+                              .buscarUsuarioPorIdUser();
+                          if (user == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Usuário não encontrado.')),
+                            );
+                            return;
+                          }
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SituacaoAcademicaPage(user: user),
+                            ),
+                          );
+                        } catch (e) {
+                          // lidar com erro
+                          print('Erro ao buscar usuário: $e');
+                        }
+                      },
                     ),
                     const SizedBox(height: 12),
                     CustomCard(
