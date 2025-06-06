@@ -62,10 +62,10 @@ class MyApp extends StatelessWidget {
             previous?.items ?? [],
           ),
         ),
-        ChangeNotifierProxyProvider<Auth, PeriodoList>(
-          create: (_) => PeriodoList(),
+        ChangeNotifierProxyProvider<Auth, DisciplinaBoletimList>(
+          create: (_) => DisciplinaBoletimList(),
           update: (ctx, auth, previous) {
-            return PeriodoList(
+            return DisciplinaBoletimList(
               auth.token ?? '',
               auth.userId ?? '',
               previous?.items ?? [],
@@ -92,20 +92,20 @@ class MyApp extends StatelessWidget {
             );
           },
         ),
-        ChangeNotifierProxyProvider<Auth, DisciplinaBoletimList>(
-          create: (_) => DisciplinaBoletimList(),
+        ChangeNotifierProxyProvider<Auth, BoletimList>(
+          create: (_) => BoletimList(),
           update: (ctx, auth, previous) {
-            return DisciplinaBoletimList(
+            return BoletimList(
               auth.token ?? '',
               auth.userId ?? '',
               previous?.items ?? [],
             );
           },
         ),
-        ChangeNotifierProxyProvider<Auth, BoletimList>(
-          create: (_) => BoletimList(),
+        ChangeNotifierProxyProvider<Auth, PeriodoList>(
+          create: (_) => PeriodoList(),
           update: (ctx, auth, previous) {
-            return BoletimList(
+            return PeriodoList(
               auth.token ?? '',
               auth.userId ?? '',
               previous?.items ?? [],
@@ -123,8 +123,6 @@ class MyApp extends StatelessWidget {
         ),
         routes: {
           AppRoutes.authOrHome: (ctx) => const AuthOrHomePage(),
-          AppRoutes.periodos: (ctx) => const PeriodosPage(),
-          AppRoutes.periodoForm: (ctx) => const PeriodoFormPage(),
           AppRoutes.cursos: (ctx) => const CursosPage(),
           AppRoutes.cursoForm: (ctx) => const CursoFormPage(),
           AppRoutes.disciplinas: (ctx) => const DisciplinaPage(),
@@ -137,6 +135,8 @@ class MyApp extends StatelessWidget {
               const DisciplinaBoletimFormPage(),
           AppRoutes.boletins: (ctx) => const BoletimPage(),
           AppRoutes.boletimForm: (ctx) => const BoletimFormPage(),
+          AppRoutes.periodos: (ctx) => const PeriodosPage(),
+          AppRoutes.periodoForm: (ctx) => const PeriodoFormPage(),
         },
         debugShowCheckedModeBanner: false,
       ),

@@ -101,7 +101,7 @@ class _UserFormPageState extends State<UserFormPage> {
 
     try {
       await userList.saveUser(_formData);
-      if (!mounted) return;  // verifica se o widget ainda está ativo
+      if (!mounted) return;
       Navigator.of(context).pop();
     } catch (error, stackTrace) {
       print('❌ ERRO AO SALVAR USER: $error');

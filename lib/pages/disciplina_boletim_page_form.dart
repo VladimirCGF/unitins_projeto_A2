@@ -17,12 +17,12 @@ class DisciplinaBoletimFormPage extends StatefulWidget {
 
 class _DisciplinaBoletimFormPageState extends State<DisciplinaBoletimFormPage> {
   final _idDisciplina = FocusNode();
-  final _idUser = FocusNode();
+  // final _idUser = FocusNode();
 
   final _formKey = GlobalKey<FormState>();
   final _formData = <String, Object>{};
   String? _selectedDisciplinaId;
-  String? _selectedUserId;
+  // String? _selectedUserId;
 
   bool _isLoading = false;
 
@@ -39,56 +39,69 @@ class _DisciplinaBoletimFormPageState extends State<DisciplinaBoletimFormPage> {
 
       if (arg != null) {
         final disciplinaBoletim = arg as DisciplinaBoletim;
-        _formData['idDisciplinaBoletim'] = disciplinaBoletim.idDisciplina;
-        _formData['idUser'] = disciplinaBoletim.idUser;
+        _formData['idDisciplina'] = disciplinaBoletim.idDisciplina;
+        // _formData['idUser'] = disciplinaBoletim.idUser;
+
       }
       if (_formData.containsKey('idDisciplinaBoletim')) {
         _selectedDisciplinaId = _formData['idDisciplinaBoletim']?.toString();
       }
-      if (_formData.containsKey('idUser')) {
-        _selectedUserId = _formData['idUser']?.toString();
-      }
+      // if (_formData.containsKey('idUser')) {
+      //   _selectedUserId = _formData['idUser']?.toString();
+      // }
     }
   }
 
   @override
   void dispose() {
     _idDisciplina.dispose();
-    _idUser.dispose();
+    // _idUser.dispose();
     super.dispose();
   }
 
   Future<void> _submitForm() async {
     final isValid = _formKey.currentState?.validate() ?? false;
-
-    if (!isValid) {
-      return;
-    }
+    if (!isValid) return;
 
     _formKey.currentState?.save();
 
     final disciplinaBoletimList =
-        Provider.of<DisciplinaBoletimList>(context, listen: false);
-
-    // ⚠️ Recuperar idDisciplina, se estiver editando
-    final idDisciplina = _formData['idDisciplina']?.toString();
+    Provider.of<DisciplinaBoletimList>(context, listen: false);
 
     setState(() => _isLoading = true);
 
     try {
-      await disciplinaBoletimList.saveDisciplinaBoletim(_formData);
+      final isEditando = _formData.containsKey('idDisciplinaBoletim') &&
+          (_formData['idDisciplinaBoletim'] as String).isNotEmpty;
+
+      if (isEditando) {
+        await disciplinaBoletimList.updateDisciplinaBoletim(
+          idDisciplinaBoletim: '',
+          camposAtualizados: {
+            'status': _formData['status'],
+            'a1': _formData['a1'],
+            'a2': _formData['a2'],
+            'exameFinal': _formData['exameFinal'],
+            'mediaSemestral': _formData['mediaSemestral'],
+            'mediaFinal': _formData['mediaFinal'],
+            'faltasNoSemestre': _formData['faltasNoSemestre'],
+          },
+        );
+      } else {
+        await disciplinaBoletimList.saveDisciplinaBoletim(_formData);
+      }
+
       Navigator.of(context).pop();
-    } catch (error, stackTrace) {
-      print('❌ ERRO AO SALVAR DISCIPLINA Boletim: $error');
-      print(stackTrace);
+    } catch (error) {
+      print('❌ ERRO AO SALVAR: $error');
       await showDialog<void>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Ocorreu um erro!'),
-          content: const Text('Ocorreu um erro ao salvar o disciplinaBoletim.'),
+          title: const Text('Erro'),
+          content: const Text('Erro ao salvar a disciplina no boletim.'),
           actions: [
             TextButton(
-              child: const Text('Ok'),
+              child: const Text('OK'),
               onPressed: () => Navigator.of(ctx).pop(),
             ),
           ],
@@ -98,6 +111,7 @@ class _DisciplinaBoletimFormPageState extends State<DisciplinaBoletimFormPage> {
       setState(() => _isLoading = false);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -114,119 +128,119 @@ class _DisciplinaBoletimFormPageState extends State<DisciplinaBoletimFormPage> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-              padding: const EdgeInsets.all(15),
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  children: [
-                    //ADD ID DISCIPLINA
-                    Consumer<DisciplinaList>(
-                      builder: (ctx, disciplinaList, child) {
-                        if (disciplinaList.items.isEmpty) {
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            child: Center(child: CircularProgressIndicator()),
-                          );
-                        }
-                        return DropdownButtonFormField<String>(
-                          value: _selectedDisciplinaId,
-                          decoration: const InputDecoration(
-                            labelText: 'Disciplina',
-                            border: OutlineInputBorder(),
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                          ),
-                          items: disciplinaList.items.map((disciplina) {
-                            return DropdownMenuItem<String>(
-                              value: disciplina.idDisciplina,
-                              child: Text(
-                                disciplina.nome,
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedDisciplinaId = value;
-                            });
-                            _formData['idDisciplina'] = value ?? '';
-                          },
-                          validator: (value) {
-                            if (value == null) {
-                              return 'Selecione um Disciplina';
-                            }
-                            return null;
-                          },
-                          isExpanded: true,
-                          icon: const Icon(Icons.arrow_drop_down),
-                          hint: const Text('Selecione um Disciplina'),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 30),
-                    //ADD ID USER
-                    Consumer<UserList>(
-                      builder: (ctx, userList, child) {
-                        if (userList.items.isEmpty) {
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            child: Center(child: CircularProgressIndicator()),
-                          );
-                        }
-                        return DropdownButtonFormField<String>(
-                          value: _selectedUserId,
-                          decoration: const InputDecoration(
-                            labelText: 'User',
-                            border: OutlineInputBorder(),
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                          ),
-                          items: userList.items.map((user) {
-                            return DropdownMenuItem<String>(
-                              value: user.idUser,
-                              child: Text(
-                                user.nome,
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedUserId = value;
-                            });
-                            _formData['idUser'] = value ?? '';
-                          },
-                          validator: (value) {
-                            if (value == null) {
-                              return 'Selecione um Usuario';
-                            }
-                            return null;
-                          },
-                          isExpanded: true,
-                          icon: const Icon(Icons.arrow_drop_down),
-                          hint: const Text('Selecione um Usuario'),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 30),
-                    // Botão de Salvar
-                    ElevatedButton(
-                      onPressed: _submitForm,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 15),
+        padding: const EdgeInsets.all(15),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              //ADD ID DISCIPLINA
+              Consumer<DisciplinaList>(
+                builder: (ctx, disciplinaList, child) {
+                  if (disciplinaList.items.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  return DropdownButtonFormField<String>(
+                    value: _selectedDisciplinaId,
+                    decoration: const InputDecoration(
+                      labelText: 'Disciplina',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
-                      child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text('Salvar Disciplina no Boletim'),
                     ),
-                  ],
-                ),
+                    items: disciplinaList.items.map((disciplina) {
+                      return DropdownMenuItem<String>(
+                        value: disciplina.idDisciplina,
+                        child: Text(
+                          disciplina.nome,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedDisciplinaId = value;
+                      });
+                      _formData['idDisciplina'] = value ?? '';
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Selecione um Disciplina';
+                      }
+                      return null;
+                    },
+                    isExpanded: true,
+                    icon: const Icon(Icons.arrow_drop_down),
+                    hint: const Text('Selecione um Disciplina'),
+                  );
+                },
               ),
-            ),
+              const SizedBox(height: 30),
+              //ADD ID USER
+              // Consumer<UserList>(
+              //   builder: (ctx, userList, child) {
+              //     if (userList.items.isEmpty) {
+              //       return const Padding(
+              //         padding: EdgeInsets.symmetric(vertical: 16),
+              //         child: Center(child: CircularProgressIndicator()),
+              //       );
+              //     }
+              //     return DropdownButtonFormField<String>(
+              //       value: _selectedUserId,
+              //       decoration: const InputDecoration(
+              //         labelText: 'User',
+              //         border: OutlineInputBorder(),
+              //         contentPadding: EdgeInsets.symmetric(
+              //           horizontal: 16,
+              //           vertical: 12,
+              //         ),
+              //       ),
+              //       items: userList.items.map((user) {
+              //         return DropdownMenuItem<String>(
+              //           value: user.idUser,
+              //           child: Text(
+              //             user.nome,
+              //             style: const TextStyle(fontSize: 16),
+              //           ),
+              //         );
+              //       }).toList(),
+              //       onChanged: (value) {
+              //         setState(() {
+              //           _selectedUserId = value;
+              //         });
+              //         _formData['idUser'] = value ?? '';
+              //       },
+              //       validator: (value) {
+              //         if (value == null) {
+              //           return 'Selecione um Usuario';
+              //         }
+              //         return null;
+              //       },
+              //       isExpanded: true,
+              //       icon: const Icon(Icons.arrow_drop_down),
+              //       hint: const Text('Selecione um Usuario'),
+              //     );
+              //   },
+              // ),
+              const SizedBox(height: 30),
+              // Botão de Salvar
+              ElevatedButton(
+                onPressed: _submitForm,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                ),
+                child: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Salvar Disciplina no Boletim'),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

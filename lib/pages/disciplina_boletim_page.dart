@@ -35,7 +35,7 @@ class _DisciplinaBoletimPageState extends State<DisciplinaBoletimPage> {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Erro ao carregar disciplinas boletim: $error')),
+              content: Text('Erro ao carregar Disciplina Boletim: $error')),
         );
       });
       _isInit = false;
@@ -45,9 +45,10 @@ class _DisciplinaBoletimPageState extends State<DisciplinaBoletimPage> {
   @override
   Widget build(BuildContext context) {
     final DisciplinaBoletimList products = Provider.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gerenciar Disciplinas Boletim'),
+        title: const Text('Gerenciar Disciplina Boletim'),
         titleTextStyle: const TextStyle(color: Colors.white, fontSize: 20),
         iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: Colors.blue,

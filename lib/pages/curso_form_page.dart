@@ -81,7 +81,7 @@ class _CursoFormPageState extends State<CursoFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cadastro de Período'),
+        title: const Text('Cadastro de Curso'),
         actions: [
           IconButton(
             onPressed: _submitForm,
@@ -101,8 +101,8 @@ class _CursoFormPageState extends State<CursoFormPage> {
                     TextFormField(
                       initialValue: _formData['nome']?.toString(),
                       decoration: const InputDecoration(
-                        labelText: 'Nome do Período',
-                        hintText: 'Ex: Período 1, Optativas...',
+                        labelText: 'Nome do Curso',
+                        hintText: 'Ex: TI, Eng',
                       ),
                       focusNode: _nome,
                       textInputAction: TextInputAction.done,
@@ -125,7 +125,7 @@ class _CursoFormPageState extends State<CursoFormPage> {
                       ),
                       child: _isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text('Salvar Período'),
+                          : const Text('Salvar Curso'),
                     ),
                   ],
                 ),

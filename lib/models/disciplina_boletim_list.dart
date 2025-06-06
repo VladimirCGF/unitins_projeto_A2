@@ -1,6 +1,6 @@
 import 'dart:convert';
+import 'dart:math';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -9,8 +9,6 @@ import '../exceptions/http_exception.dart';
 import '../utils/constants.dart';
 import 'auth.dart';
 import 'disciplina_boletim.dart';
-import 'package:firebase_database/firebase_database.dart';
-
 
 class DisciplinaBoletimList with ChangeNotifier {
   final String _token;
@@ -32,9 +30,11 @@ class DisciplinaBoletimList with ChangeNotifier {
 
     final response = await http.get(
       Uri.parse(
-          '${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$_userId/disciplinas.json?auth=$_token'),
+          '${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$_userId.json?auth=$_token'),
     );
 
+    print('----------');
+    print(response.body);
     if (response.body == 'null') return;
 
     final Map<String, dynamic> data = jsonDecode(response.body);
@@ -78,7 +78,7 @@ class DisciplinaBoletimList with ChangeNotifier {
       idDisciplinaBoletim: hasId ? data['idDisciplinaBoletim'] as String : '',
       idDisciplina: idDisciplina,
       nomeDisciplina: nomeDisciplina,
-      idUser: data['idUser'] as String,
+      idUser: _userId,
       status: (data['status'] ?? 'Matriculado') as String,
       a1: (data['a1'] ?? 0.0) as double,
       a2: (data['a2'] ?? 0.0) as double,
@@ -89,106 +89,80 @@ class DisciplinaBoletimList with ChangeNotifier {
     );
 
     if (hasId) {
-      return updateDisciplinaBoletim(disciplinaBoletim);
+      return updateDisciplinaBoletim(
+        idDisciplinaBoletim: disciplinaBoletim.idDisciplinaBoletim,
+        camposAtualizados: {},
+      );
     } else {
-      return addDisciplinaBoletim(disciplinaBoletim);
+      return addDisciplinaBoletim(idDisciplina);
     }
   }
 
-  Future<void> addDisciplinaBoletim(DisciplinaBoletim disciplinaBoletim) async {
-    // 1. Buscar nome da disciplina no Firebase com base no id
+  Future<void> addDisciplinaBoletim(String idDisciplina) async {
+    // 🟢 Buscar a disciplina no banco
     final disciplinaResponse = await http.get(
       Uri.parse(
-          '${Constants.DISCIPLINA_BASE_URL}/${disciplinaBoletim.idDisciplina}.json?auth=$_token'),
+          '${Constants.DISCIPLINA_BASE_URL}/$idDisciplina.json?auth=$_token'),
     );
 
     if (disciplinaResponse.statusCode >= 400 ||
         disciplinaResponse.body == 'null') {
-      throw HttpException(
-        msg: 'Não foi possível buscar o nome da disciplina.',
-        statusCode: disciplinaResponse.statusCode,
-      );
+      return;
     }
 
-    final disciplinaData = jsonDecode(disciplinaResponse.body);
-    final nomeDisciplina = disciplinaData['nome'] ?? 'Sem nome';
+    final dados = jsonDecode(disciplinaResponse.body);
 
-    // 2. Atualiza o objeto com o nome
-    final disciplinaBoletimAtualizada = disciplinaBoletim.copyWith(
+    final nomeDisciplina = dados['nome'] ?? 'Desconhecida';
+
+    final novaDisciplinaBoletim = DisciplinaBoletim(
+      idDisciplinaBoletim: '',
       nomeDisciplina: nomeDisciplina,
+      idDisciplina: idDisciplina,
+      idUser: _userId,
+      status: 'PD',
+      a1: 0.0,
+      a2: 0.0,
+      exameFinal: 0.0,
+      mediaSemestral: 0.0,
+      mediaFinal: 0.0,
+      faltasNoSemestre: 0,
     );
 
-    // 3. Salvar no Firebase - usando POST para gerar um novo ID
+    // 🟢 POST no caminho correto por usuário
+    final postUrl = Uri.parse(
+        '${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$_userId.json?auth=$_token');
     final response = await http.post(
-      Uri.parse('${Constants.DISCIPLINA_BOLETIM_BASE_URL}.json?auth=$_token'),
-      body: jsonEncode({
-        'idDisciplinaBoletim': '', // vazio, pois vai atualizar depois
-        'idDisciplina': disciplinaBoletimAtualizada.idDisciplina,
-        'nomeDisciplina': disciplinaBoletimAtualizada.nomeDisciplina,
-        'idUser': disciplinaBoletimAtualizada.idUser,
-        'status': disciplinaBoletimAtualizada.status,
-        'a1': disciplinaBoletimAtualizada.a1,
-        'a2': disciplinaBoletimAtualizada.a2,
-        'exameFinal': disciplinaBoletimAtualizada.exameFinal,
-        'mediaSemestral': disciplinaBoletimAtualizada.mediaSemestral,
-        'mediaFinal': disciplinaBoletimAtualizada.mediaFinal,
-        'faltasNoSemestre': disciplinaBoletimAtualizada.faltasNoSemestre,
-      }),
+      postUrl,
+      body: jsonEncode(novaDisciplinaBoletim.toJson()),
     );
 
-    if (response.statusCode < 400) {
-      final id = json.decode(response.body)['name'];
+    final responseData = jsonDecode(response.body);
+    final generatedId = responseData['name'];
 
-      // 4. Atualizar o campo idDisciplinaBoletim com o ID gerado no registro
-      final updateUrl = Uri.parse('${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$id.json?auth=$_token');
-
-      await http.patch(
-        updateUrl,
-        body: jsonEncode({'idDisciplinaBoletim': id}),
-      );
-
-      // 5. Atualiza localmente a lista e notifica listeners
-      final newBoletim =
-      disciplinaBoletimAtualizada.copyWith(idDisciplinaBoletim: id);
-      _items.add(newBoletim);
-      notifyListeners();
-    } else {
-      throw HttpException(
-        msg: 'Não foi possível adicionar o disciplinaBoletim.',
-        statusCode: response.statusCode,
-      );
-    }
+    // 🟡 PATCH para atualizar o idDisciplinaBoletim
+    final patchUrl = Uri.parse(
+        '${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$_userId/$generatedId.json?auth=$_token');
+    await http.patch(
+      patchUrl,
+      body: jsonEncode({'idDisciplinaBoletim': generatedId}),
+    );
   }
 
+  Future<void> updateDisciplinaBoletim({
+    required String idDisciplinaBoletim,
+    required Map<String, dynamic> camposAtualizados,
+  }) async {
+    final patchUrl = Uri.parse(
+      '${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$_userId/$idDisciplinaBoletim.json?auth=$_token',
+    );
 
-  Future<void> updateDisciplinaBoletim(
-      DisciplinaBoletim disciplinaBoletim) async {
-    int index = _items.indexWhere(
-        (b) => b.idDisciplinaBoletim == disciplinaBoletim.idDisciplinaBoletim);
+    final response = await http.patch(
+      patchUrl,
+      body: jsonEncode(camposAtualizados),
+    );
 
-    if (index >= 0) {
-      final response = await http.patch(
-        Uri.parse(
-            '${Constants.DISCIPLINA_BOLETIM_BASE_URL}/${disciplinaBoletim.idDisciplinaBoletim}.json?auth=$_token'),
-        body: jsonEncode({
-          'status': disciplinaBoletim.status,
-          'a1': disciplinaBoletim.a1,
-          'a2': disciplinaBoletim.a2,
-          'exameFinal': disciplinaBoletim.exameFinal,
-          'mediaSemestral': disciplinaBoletim.mediaSemestral,
-          'mediaFinal': disciplinaBoletim.mediaFinal,
-          'faltasNoSemestre': disciplinaBoletim.faltasNoSemestre,
-        }),
-      );
-      if (response.statusCode < 400) {
-        _items[index] = disciplinaBoletim;
-        notifyListeners();
-      } else {
-        throw HttpException(
-          msg: 'Não foi possível atualizar o disciplinaBoletim.',
-          statusCode: response.statusCode,
-        );
-      }
+    if (response.statusCode >= 400) {
+      throw Exception('Erro ao atualizar a disciplina no boletim.');
     }
   }
 
@@ -197,11 +171,13 @@ class DisciplinaBoletimList with ChangeNotifier {
       Uri.parse('${Constants.DISCIPLINA_BASE_URL}.json?auth=$_token'),
     );
 
-    if (disciplinasResponse.statusCode >= 400 || disciplinasResponse.body == 'null') {
+    if (disciplinasResponse.statusCode >= 400 ||
+        disciplinasResponse.body == 'null') {
       return;
     }
 
-    final Map<String, dynamic> disciplinasData = jsonDecode(disciplinasResponse.body);
+    final Map<String, dynamic> disciplinasData =
+        jsonDecode(disciplinasResponse.body);
 
     final disciplinasDoCurso = disciplinasData.entries.where((entry) {
       return entry.value['idCurso'] == idCurso;
@@ -213,22 +189,38 @@ class DisciplinaBoletimList with ChangeNotifier {
 
       final nomeDisciplina = dados['nome'] ?? 'Desconhecida';
 
+      final random = Random();
+      double a1 = (random.nextInt(10) + 1).toDouble();
+      double a2 = (random.nextInt(10) + 1).toDouble();
+      double mediaFinal = (a1 + a2) / 2;
+      String status;
+
+      if (mediaFinal >= 6) {
+        status = 'AP';
+      } else {
+        a1 = 0.0;
+        a2 = 0.0;
+        mediaFinal = 0.0;
+        status = 'PD';
+      }
+
       final novaDisciplinaBoletim = DisciplinaBoletim(
-        idDisciplinaBoletim: '', // Será preenchido depois
+        idDisciplinaBoletim: '',
         nomeDisciplina: nomeDisciplina,
         idDisciplina: disciplinaId,
         idUser: _userId,
-        status: 'PD',
-        a1: 0.0,
-        a2: 0.0,
+        status: status,
+        a1: a1,
+        a2: a2,
         exameFinal: 0.0,
         mediaSemestral: 0.0,
-        mediaFinal: 0.0,
+        mediaFinal: mediaFinal,
         faltasNoSemestre: 0,
       );
 
       // 🟢 POST no caminho correto por usuário
-      final postUrl = Uri.parse('${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$_userId.json?auth=$_token');
+      final postUrl = Uri.parse(
+          '${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$_userId.json?auth=$_token');
       final response = await http.post(
         postUrl,
         body: jsonEncode(novaDisciplinaBoletim.toJson()),
@@ -238,7 +230,8 @@ class DisciplinaBoletimList with ChangeNotifier {
       final generatedId = responseData['name'];
 
       // 🟡 PATCH para atualizar o idDisciplinaBoletim
-      final patchUrl = Uri.parse('${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$_userId/$generatedId.json?auth=$_token');
+      final patchUrl = Uri.parse(
+          '${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$_userId/$generatedId.json?auth=$_token');
       await http.patch(
         patchUrl,
         body: jsonEncode({'idDisciplinaBoletim': generatedId}),
@@ -246,9 +239,8 @@ class DisciplinaBoletimList with ChangeNotifier {
     }
   }
 
-
-
-  Future<List<DisciplinaBoletim>> fetchDisciplinasPendentes(BuildContext context) async {
+  Future<List<DisciplinaBoletim>> fetchDisciplinasPendentes(
+      BuildContext context) async {
     final auth = Provider.of<Auth>(context, listen: false);
     final userId = auth.userId;
 
@@ -258,7 +250,8 @@ class DisciplinaBoletimList with ChangeNotifier {
     }
 
     final response = await http.get(
-      Uri.parse('${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$userId.json?auth=$_token'),
+      Uri.parse(
+          '${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$userId.json?auth=$_token'),
     );
 
     if (response.statusCode >= 400) {
@@ -287,7 +280,8 @@ class DisciplinaBoletimList with ChangeNotifier {
     return pendentes;
   }
 
-  Future<List<DisciplinaBoletim>> fetchDisciplinasMatriculadas(BuildContext context) async {
+  Future<List<DisciplinaBoletim>> fetchDisciplinasMatriculadas(
+      BuildContext context) async {
     final auth = Provider.of<Auth>(context, listen: false);
     final userId = auth.userId;
 
@@ -297,7 +291,8 @@ class DisciplinaBoletimList with ChangeNotifier {
     }
 
     final response = await http.get(
-      Uri.parse('${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$userId.json?auth=$_token'),
+      Uri.parse(
+          '${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$userId.json?auth=$_token'),
     );
 
     if (response.statusCode >= 400) {
@@ -326,7 +321,46 @@ class DisciplinaBoletimList with ChangeNotifier {
     return pendentes;
   }
 
+  Future<List<DisciplinaBoletim>> fetchDisciplinasAprovadas(
+      BuildContext context) async {
+    final auth = Provider.of<Auth>(context, listen: false);
+    final userId = auth.userId;
 
+    if (userId == null) {
+      print('❌ ERRO: userId está null. Usuário não está logado corretamente.');
+      return [];
+    }
+
+    final response = await http.get(
+      Uri.parse(
+          '${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$userId.json?auth=$_token'),
+    );
+
+    if (response.statusCode >= 400) {
+      print('❌ Erro de requisição: ${response.statusCode}');
+      return [];
+    }
+
+    final data = jsonDecode(response.body);
+
+    if (data == null) return [];
+
+    final List<DisciplinaBoletim> pendentes = [];
+
+    data.forEach((id, value) {
+      if (value is Map<String, dynamic>) {
+        final disc = DisciplinaBoletim.fromMap(value);
+        if (disc.status == 'AP' && disc.idUser == userId) {
+          pendentes.add(disc);
+        }
+      } else {
+        print('⚠️ Ignorado: $id - valor não é um Map: $value');
+      }
+    });
+
+    print('📋 Disciplinas com status AP: ${pendentes.length}');
+    return pendentes;
+  }
 
   Future<bool> rematriculaDisciplinaBoletim(DisciplinaBoletim d) async {
     final idUser = d.idUser;
@@ -343,7 +377,8 @@ class DisciplinaBoletimList with ChangeNotifier {
 
     final user = _userId;
     if (user == null) {
-      print('❌ Usuário não autenticado! Abortando atualização para disciplina $idDisciplinaBoletim');
+      print(
+          '❌ Usuário não autenticado! Abortando atualização para disciplina $idDisciplinaBoletim');
       return false;
     }
 
@@ -365,13 +400,76 @@ class DisciplinaBoletimList with ChangeNotifier {
       print('✅ Disciplina $idDisciplinaBoletim rematriculada como MT');
       return true;
     } else {
-      print('❌ Falha ao atualizar disciplina $idDisciplinaBoletim: ${response.statusCode} - ${response.body}');
+      print(
+          '❌ Falha ao atualizar disciplina $idDisciplinaBoletim: ${response.statusCode} - ${response.body}');
       return false;
     }
   }
 
+  Future<double> calcularPercentualConclusaoDoCurso(String idCurso) async {
+    final disciplinasResponse = await http.get(
+      Uri.parse('${Constants.DISCIPLINA_BASE_URL}.json?auth=$_token'),
+    );
 
+    if (disciplinasResponse.statusCode >= 400 ||
+        disciplinasResponse.body == 'null') {
+      print('❌ Erro ao buscar disciplinas do curso.');
+      return 0.0;
+    }
 
+    final Map<String, dynamic> disciplinasData =
+        jsonDecode(disciplinasResponse.body);
+
+    final disciplinasDoCurso = disciplinasData.entries.where((entry) {
+      return entry.value['idCurso'] == idCurso;
+    }).toList();
+
+    final totalDisciplinas = disciplinasDoCurso.length;
+
+    if (totalDisciplinas == 0) {
+      print('⚠️ Nenhuma disciplina encontrada para o curso $idCurso');
+      return 0.0;
+    }
+
+    // Buscar disciplinas do boletim do usuário
+    final response = await http.get(
+      Uri.parse(
+          '${Constants.DISCIPLINA_BOLETIM_BASE_URL}/$_userId.json?auth=$_token'),
+    );
+
+    if (response.statusCode >= 400 || response.body == 'null') {
+      print('❌ Erro ao buscar disciplinas do boletim do usuário.');
+      return 0.0;
+    }
+
+    final Map<String, dynamic> boletimData = jsonDecode(response.body);
+
+    // Filtra as disciplinas concluídas
+    int disciplinasConcluidas = 0;
+
+    for (final disciplinaEntry in disciplinasDoCurso) {
+      final idDisciplina = disciplinaEntry.key;
+
+      // Verifica se o usuário tem essa disciplina no boletim e se está concluída
+      final concluida = boletimData.entries.any((boletimEntry) {
+        final data = boletimEntry.value;
+        return data['idDisciplina'] == idDisciplina &&
+            (data['status'] == 'AP' || data['status'] == 'RM');
+      });
+
+      if (concluida) {
+        disciplinasConcluidas++;
+      }
+    }
+
+    final percentual = (disciplinasConcluidas / totalDisciplinas) * 100;
+
+    print(
+        '✅ $disciplinasConcluidas de $totalDisciplinas disciplinas concluídas.');
+    print('📊 Percentual de conclusão: ${percentual.toStringAsFixed(2)}%');
+
+    return percentual;
+  }
 
   Future<void> removeDisciplinaBoletim(
       DisciplinaBoletim disciplinaBoletim) async {

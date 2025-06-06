@@ -22,6 +22,7 @@ class RematriculaConfirmadaPage extends StatefulWidget {
 }
 
 class _RematriculaConfirmadaPageState extends State<RematriculaConfirmadaPage> {
+
   @override
   void initState() {
     super.initState();

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:unitins_projeto/models/disciplina_boletim.dart';
+import 'package:unitins_projeto/models/disciplina_boletim_list.dart';
 
-import '../models/disciplina_boletim.dart';
-import '../models/disciplina_boletim_list.dart';
 import '../utils/app_routes.dart';
 
 class DisciplinaBoletimItem extends StatelessWidget {
@@ -18,7 +18,7 @@ class DisciplinaBoletimItem extends StatelessWidget {
     final msg = ScaffoldMessenger.of(context);
     return ListTile(
       leading: CircleAvatar(),
-      title: Text(disciplinaBoletim.idUser),
+      title: Text(disciplinaBoletim.nomeDisciplina),
       trailing: SizedBox(
         width: 100,
         child: Row(
@@ -29,7 +29,6 @@ class DisciplinaBoletimItem extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).pushNamed(
                   AppRoutes.disciplinasBoletimForm,
-                  arguments: disciplinaBoletim,
                 );
               },
             ),

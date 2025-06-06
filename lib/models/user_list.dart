@@ -184,6 +184,7 @@ class UserList with ChangeNotifier {
     }
   }
 
+
   Future<void> removeUser(User user) async {
     int index = _items.indexWhere((p) => p.idUser == user.idUser);
 
